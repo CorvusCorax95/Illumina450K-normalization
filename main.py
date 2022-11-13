@@ -20,8 +20,8 @@ from normalization import quantile_normaliziation
 
 df_meth = pd.read_csv('resources/short_methylated_w_types.csv', sep='\t')
 df_unmeth = pd.read_csv('resources/short_unmethylated_w_types.csv', sep='\t')
-df_log_meth = log_data(df_meth, 'logged_meth')
-df_log_unmeth = log_data(df_unmeth, 'logged_unmeth')
+df_log_meth = log_data(df_meth, 'logged_meth.csv')
+df_log_unmeth = log_data(df_unmeth, 'logged_unmeth.csv')
 
 
 ## RAW
