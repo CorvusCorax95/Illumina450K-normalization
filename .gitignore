@@ -3,3 +3,4 @@ methylation-rb/
 resources/
 .ipynb_checkpoints/
 .idea/
+.csv
