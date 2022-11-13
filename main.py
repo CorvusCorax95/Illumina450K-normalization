@@ -1,78 +1,63 @@
-import math
-
-import numpy as np
 import pandas as pd
-import qnorm as qn
-import matplotlib.pyplot as plt
-import scipy
+from prepare_data import log_data
 
-### FUNCTIONS ###
-def probetype_to_dataframe(input):
-    # make dataframe from csv-file
-    df = pd.read_csv(input, sep=',')
+from plotting import density_plot
+from normalization import mean_normalization
+from normalization import min_max_normalization
+from prepare_data import output_measures
+from normalization import quantile_normaliziation
 
-    # set probes as index
-    df_i = df.set_index('probe')
-    return df_i
+### DATA PREPARATION ###
 
-def add_probetypes(df_dest, df_target):
+# from prepare_data import prepare_data
+# prepare_data()
 
-    # search for fitting probe-ids
-    df_merged = pd.merge(df_dest, df_target, on="probe")
+# Main holds the dataframes!
+#
+#
 
-    return df_merged
+### RAW PLOTTING ###
 
-def dataframe_log(x):
-    if(isinstance(x, int) and x != 0):
-        math.log(x, math.e)
-    return x
-
-
-### MAIN ###
-
-# rebuild illumina probe tables to dataframe with just probes and types
-# returns dataframe
-df_450 = probetype_to_dataframe('illumina-table-450.csv')
+df_meth = pd.read_csv('resources/short_methylated_w_types.csv', sep='\t')
+df_unmeth = pd.read_csv('resources/short_unmethylated_w_types.csv', sep='\t')
+df_log_meth = log_data(df_meth, 'logged_meth')
+df_log_unmeth = log_data(df_unmeth, 'logged_unmeth')
 
 
-# convert methylation-tables to dataframes
-df_values_meth = pd.read_csv('methylation-rb/short.tsv', sep='\t')
+## RAW
+density_plot(df_meth, "Raw plot-methylated")
+density_plot(df_unmeth, "Raw plot-unmethylated")
+output_measures(df_meth, "Raw Methylated")
+output_measures(df_meth, "Raw Unmethylated")
 
-#df_values_meth = pd.read_csv('methylation-rb/methylation_meth.wide.tsv', sep='\t')
-df_values_unmeth = pd.read_csv('methylation-rb/methylation_unmeth.wide.tsv', sep='\t')
+## LOGGED
+density_plot(df_log_meth, "Logged plot-methylated")
+density_plot(df_log_unmeth, "Logged plot-unmethylated")
+output_measures(df_log_meth, "Logged Methylated")
+output_measures(df_log_unmeth, "Logged Unmethylated")
 
-# set index to probe-id
-df_values_meth = df_values_meth.set_index('probe')
-df_values_unmeth = df_values_unmeth.set_index('probe')
+## MEAN NORMALIZATION
+df_meannorm_meth = mean_normalization(df_log_meth, "mean normalized - methylated")
+df_meannorm_unmeth = mean_normalization(df_log_unmeth, "mean normalized - unmethylated")
+output_measures(df_meannorm_meth, "Mean Normalized Methylated")
+output_measures(df_meannorm_unmeth, "Mean Normalized Unmethylated")
 
-# match probes to type in methylation file
-# returns new dataframe including probe types
-df_meth_w_types = add_probetypes(df_450, df_values_meth)
-df_unmeth_w_types = add_probetypes(df_450, df_values_unmeth)
+## MIN MAX NORMALIZATION
+df_minmax_meth = min_max_normalization(df_log_meth, "min-max normalized - methylated")
+df_minmax_unmeth = min_max_normalization(df_log_unmeth, "min-max normalized - unmethylated")
+output_measures(df_minmax_meth, "Min-Max Normalized Methylated")
+output_measures(df_minmax_unmeth, "Min-Max Normalized Unmethylated")
 
-### QUANTILE NORMALIZATION ###
+## QUANTILE NORMALIZATION -> noch kaputt
+df_qn_meth = quantile_normaliziation(df_log_meth, "quantile normalized - methylated")
+df_qn_unmeth = quantile_normaliziation(df_log_unmeth, "quantile normalized - unmethylated")
+output_measures(df_qn_meth, "Quantile Normalized Methylated")
+output_measures(df_qn_unmeth, "Quantile Normalized Unmethylated")
 
-import qnorm
+#print(df_log_meth.head())
+#print(df_qn_meth.head())
 
-df_values_meth = df_values_meth.head(100)
 
-fix, ax = plt.subplots(3)
-
-ax[0] = df_values_meth.plot.density(linewidth=1)
-ax[0] = plt.title("Raw density plot")
-
-df_log = df_values_meth
-df_log = df_log.applymap(dataframe_log)
-
-ax[1] = df_log.plot.density(linewidth=1)
-ax[1] = plt.title("Log density plot")
-
-df_qn = qnorm.quantile_normalize(df_values_meth, axis=1)
-
-ax[2] = df_qn.plot.density(linewidth=1)
-ax[2] = plt.title("Quantile normalized plot")
-
-plt.show()
 
 
 print("All done")
