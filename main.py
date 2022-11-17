@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 from prepare_data import log_data
 
@@ -6,9 +7,9 @@ from normalization import mean_normalization
 from normalization import min_max_normalization
 from prepare_data import output_measures
 from normalization import quantile_normaliziation
-import plotly.express as px
 
 import streamlit as st
+
 
 ### DATA PREPARATION ###
 
@@ -17,57 +18,12 @@ import streamlit as st
 
 # Main holds the dataframes!
 #
-
-
-
-def do_stuff():
-
-    sample_list = df_meth.columns.values.tolist()[2:]
-    df_meth[sample_list] = df_meth[sample_list].apply(lambda x: x + 1)
-    df_unmeth[sample_list] = df_unmeth[sample_list].apply(lambda x: x + 1)
-    df_log_meth = log_data(df_meth, 'logged_meth.csv')
-    df_log_unmeth = log_data(df_unmeth, 'logged_unmeth.csv')
-
-
-    ## RAW
-    #density_plot(df_meth, "Raw plot-methylated")
-    #density_plot(df_unmeth, "Raw plot-unmethylated")
-    #output_measures(df_meth, "Raw Methylated")
-    #output_measures(df_meth, "Raw Unmethylated")
-
-    ## LOGGED
-    # density_plot(df_log_meth, "Logged plot-methylated")
-    # density_plot(df_log_unmeth, "Logged plot-unmethylated")
-    # output_measures(df_log_meth, "Logged Methylated")
-    # output_measures(df_log_unmeth, "Logged Unmethylated")
-    #
-    # ## MEAN NORMALIZATION
-    # df_meannorm_meth = mean_normalization(df_log_meth, "mean normalized - methylated")
-    # df_meannorm_unmeth = mean_normalization(df_log_unmeth, "mean normalized - unmethylated")
-    # output_measures(df_meannorm_meth, "Mean Normalized Methylated")
-    # output_measures(df_meannorm_unmeth, "Mean Normalized Unmethylated")
-    #
-    # ## MIN MAX NORMALIZATION
-    # df_minmax_meth = min_max_normalization(df_log_meth, "min-max normalized - methylated")
-    # df_minmax_unmeth = min_max_normalization(df_log_unmeth, "min-max normalized - unmethylated")
-    # output_measures(df_minmax_meth, "Min-Max Normalized Methylated")
-    # output_measures(df_minmax_unmeth, "Min-Max Normalized Unmethylated")
-    #
-    # ## QUANTILE NORMALIZATION -> noch kaputt
-    # df_qn_meth = quantile_normaliziation(df_log_meth, "quantile normalized - methylated")
-    # df_qn_unmeth = quantile_normaliziation(df_log_unmeth, "quantile normalized - unmethylated")
-    # output_measures(df_qn_meth, "Quantile Normalized Methylated")
-    # output_measures(df_qn_unmeth, "Quantile Normalized Unmethylated")
-
-    print("All done")
-
-
-def build_website():
+def make_header():
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.set_page_config(page_title="450K normalization", page_icon=":chart_with_upwards_trend:", layout="wide")
 
     ## HEADER ##
-    with st.container(): #for wrapping contents
+    with st.container():  # for wrapping contents
         st.header("Normalization of Illumina HumanMethylation 450K Beadchips")
         st.subheader("Methylation normalization because technical variability sucks.")
 
@@ -91,37 +47,45 @@ def build_website():
             - university in a land just used for size comparisons
             """
                      )
-    #with st.container():
-    #    st.write(df_meth)
-    #    st.write(df_unmeth)
 
+def make_plots():
     with st.container():
-        st.write("Methylated Plots")
+
         left_column, right_column = st.columns(2)
         with left_column:
-            fig_dens_meth = density_plot(df_log_meth, "Logged plot - methylated")
+            st.write("Methylated Plots")
+            fig_dens_meth = density_plot(df_log_meth, "Logged plot - methylated", 5, 17)
             st.pyplot(fig_dens_meth)
-
-        with right_column:
+            ## MEAN NORMALIZED
             df_meannorm_meth = mean_normalization(df_log_meth)
-            fig_meannorm_meth = density_plot(df_meannorm_meth, "Mean Normalized - methylated")
+            fig_meannorm_meth = density_plot(df_meannorm_meth, "Mean Normalized - methylated", -4, 3)
             st.pyplot(fig_meannorm_meth)
+            ## MIN MAX NORMALIZED
+            df_minmax_meth = min_max_normalization(df_log_meth)
+            fig_mm_meth = density_plot(df_minmax_meth, "Min-Max Normalized - methylated", -0.2, 1.25)
+            st.pyplot(fig_mm_meth)
+            ## QUANTILE NORMALIZED
+            df_qn_meth = quantile_normaliziation(df_log_meth)
+            fig_qn_meth = density_plot(df_qn_meth, "Quantile Normalized plot (Median) - methylated", 5, 17)
+            st.pyplot(fig_qn_meth)
 
-
-    with st.container():
-        st.write("Unmethylated Plots")
-        left_column, right_column = st.columns(2)
-        with left_column:
-            fig_dens_unmeth = density_plot(df_log_unmeth, "Logged plot - unmethylated")
-            st.pyplot(fig_dens_unmeth)
 
         with right_column:
+            st.write("Unmethylated Plots")
+            fig_dens_unmeth = density_plot(df_log_unmeth, "Logged plot - unmethylated", 5, 17)
+            st.pyplot(fig_dens_unmeth)
+            ## MEAN NORMALIZED
             df_meannorm_unmeth = mean_normalization(df_log_unmeth)
-            fig_meannorm_unmeth = density_plot(df_meannorm_unmeth, "Mean Normalized - unmethylated")
+            fig_meannorm_unmeth = density_plot(df_meannorm_unmeth, "Mean Normalized - unmethylated", -4, 3)
             st.pyplot(fig_meannorm_unmeth)
-
-
-#do_stuff()
+            ## MIN MAX NORMALIZED
+            df_minmax_unmeth = min_max_normalization(df_log_unmeth)
+            fig_mm_unmeth = density_plot(df_minmax_unmeth, "Min-Max Normalized - unmethylated", -0.2, 1.25)
+            st.pyplot(fig_mm_unmeth)
+            ## QUANTILE NORMALIZED
+            df_qn_unmeth = quantile_normaliziation(df_log_unmeth)
+            fig_qn_unmeth = density_plot(df_qn_unmeth, "Quantile Normalized plot (Median) - unmethylated", 5, 17)
+            st.pyplot(fig_qn_unmeth)
 
 ##------------------------------------------------------------------------GET DATA-##
 df_meth = pd.read_csv('resources/short_methylated_w_types.csv', sep='\t')
@@ -136,4 +100,5 @@ df_log_unmeth = log_data(df_unmeth, 'logged_unmeth.csv')
 ##---------------------------------------------------------------------------------##
 
 
-build_website()
+make_header()
+make_plots()
