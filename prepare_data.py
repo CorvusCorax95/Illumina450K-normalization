@@ -6,6 +6,9 @@ import numpy as np
 
 
 ### FUNCTIONS ###
+
+# making a help-dataframe with just probe-IDs and
+# probe types (I and II)
 def probetype_to_dataframe(input):
     # make dataframe from csv-file
     df = pd.read_csv(input, sep=',')
@@ -15,6 +18,8 @@ def probetype_to_dataframe(input):
     return df_i
 
 
+# adding probetypes (I and II) to my dataframe
+# to distinguish between Infinium I and Infinium II probes
 def add_probetypes(df_dest, df_target):
     # search for fitting probe-ids
     df_merged = pd.merge(df_dest, df_target, on="probe")
@@ -29,8 +34,9 @@ def dataframe_log(x):
 
 
 ### MAIN ###
+# rebuild illumina probe tables to dataframe with just probes and types
 def prepare_data():
-    # rebuild illumina probe tables to dataframe with just probes and types
+
     # returns dataframe
     df_450 = probetype_to_dataframe('illumina-table-450.csv')
 
@@ -57,11 +63,14 @@ def prepare_data():
     df_unmeth_w_types.to_csv('short_unmethylated_w_types.csv', sep='\t')
 
 
+# reads pandas dataframe from csv
 def make_dataframe(file):
     df = pd.read_csv(file, sep='\t')
     return df
 
 
+# applying log to all values in the dataframe
+# stores dataframe as csv in new file
 def log_data(df, filename):
     # log values of dataframe
     df.set_index("probe", inplace=True)
@@ -76,11 +85,39 @@ def log_data(df, filename):
     df_log = df_log.dropna()
     return df_log
 
+
+# calculates means of all samples
 def output_measures(df, title):
-    sample_list = df.columns.values.tolist()[2:]
+    sample_list = df.columns.values.tolist()[1:]
     print("Dataframe: " + title)
     means = []
     for x in sample_list:
         means.append(df[x].mean())
-        #print(x, ": ", str(df[x].mean())
+        # print(x, ": ", str(df[x].mean())
     print("Mean: ", np.average(means))
+
+
+# beta-value: methylated / methylated + unmethylated + 100
+def beta_value(df_meth, df_unmeth, offset):
+    df = df_meth
+    sample_list = df_meth.columns.values.tolist()[1:]
+    probes_meth = df_meth.index.values.tolist()
+    # loops through all columns
+    for x in sample_list:
+        for y in probes_meth:
+            df[x][y] = df_meth[x][y] / (df_meth[x][y] + df_unmeth[x][y] + offset)
+    return df
+
+
+# M-value: log(methylated / unmethylated)
+def m_value(df_meth, df_unmeth):
+    df = df_meth
+    sample_list = df_meth.columns.values.tolist()[1:]
+    probes_meth = df_meth.index.values.tolist()
+    # loops through all columns
+    for x in sample_list:
+        # loops through all rows
+        for y in probes_meth:
+            inner = df_meth[x][y] / df_unmeth[x][y]
+            df[x][y] = np.log2(inner)
+    return df
