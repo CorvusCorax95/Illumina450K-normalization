@@ -1,5 +1,10 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
+import scipy.stats as scipy
+
+import normalization
+import plotting
 from prepare_data import log_data
 
 from plotting import density_plot
@@ -10,6 +15,7 @@ from normalization import quantile_normaliziation
 from normalization import assign_probes_to_state
 from prepare_data import beta_value
 from prepare_data import m_value
+import scipy.optimize as optimize
 
 import streamlit as st
 
@@ -51,63 +57,47 @@ def make_header():
             """
                      )
 
+
 def make_plots():
     with st.container():
-
         left_column, right_column = st.columns(2)
         with left_column:
-            st.write("Methylated Plots")
-            fig_dens_meth = density_plot(df_log_meth, "Logged plot - methylated", 5, 17)
-            st.pyplot(fig_dens_meth)
-            ## MEAN NORMALIZED
-            # df_meannorm_meth = mean_normalization(df_log_meth)
-            # fig_meannorm_meth = density_plot(df_meannorm_meth, "Mean Normalized - methylated", -4, 3)
-            # st.pyplot(fig_meannorm_meth)
-            # ## MIN MAX NORMALIZED
-            # df_minmax_meth = min_max_normalization(df_log_meth)
-            # fig_mm_meth = density_plot(df_minmax_meth, "Min-Max Normalized - methylated", -0.2, 1.25)
-            # st.pyplot(fig_mm_meth)
-            # ## QUANTILE NORMALIZED
-            # # last column as Median column
-            # df_log_meth['Median'] = df_log_unmeth.median(axis=1)
-            # reference_options = df_log_meth.columns.values.tolist()[2:]
-            # reference_meth = st.selectbox('Which reference do you want to use?',  reference_options, (len(reference_options)-1), key=0)
-            # df_qn_meth = quantile_normaliziation(df_log_meth, reference_meth)
-            # fig_qn_meth = density_plot(df_qn_meth, "Quantile Normalized plot (Median) - methylated", 5, 17)
-            # st.pyplot(fig_qn_meth)
+            # TODO: DONE
+            #plotting.methylated_plots(df_log_meth)
+
             ## BETA MIXTURE NORMALIZED
             df_beta = beta_value(df_meth, df_unmeth, 100)
             fig_beta = density_plot(df_beta, "Beta Values", -0.5, 1.5)
             st.pyplot(fig_beta)
 
+            # TODO: UNDER CONSTRUCTION
+            #single_col = df_beta.iloc[:, 1]
+            #array = single_col.to_numpy()
+            #st.write(df_beta)
+            #st.write(df_beta.iloc[:, 1])
 
         with right_column:
-            st.write("Unmethylated Plots")
-            fig_dens_unmeth = density_plot(df_log_unmeth, "Logged plot - unmethylated", 5, 17)
-            st.pyplot(fig_dens_unmeth)
-            ## MEAN NORMALIZED
-            # df_meannorm_unmeth = mean_normalization(df_log_unmeth)
-            # fig_meannorm_unmeth = density_plot(df_meannorm_unmeth, "Mean Normalized - unmethylated", -4, 3)
-            # st.pyplot(fig_meannorm_unmeth)
-            # ## MIN MAX NORMALIZED
-            # df_minmax_unmeth = min_max_normalization(df_log_unmeth)
-            # fig_mm_unmeth = density_plot(df_minmax_unmeth, "Min-Max Normalized - unmethylated", -0.2, 1.25)
-            # st.pyplot(fig_mm_unmeth)
-            # ## QUANTILE NORMALIZED
-            # # last column as Median column
-            # df_log_unmeth['Median'] = df_log_unmeth.median(axis=1)
-            # reference_options = df_log_unmeth.columns.values.tolist()[2:]
-            # reference_unmeth = st.selectbox('Which reference do you want to use?', reference_options, (len(reference_options)-1), key=1)
-            # df_qn_unmeth = quantile_normaliziation(df_log_unmeth, reference_unmeth)
-            # fig_qn_unmeth = density_plot(df_qn_unmeth, "Quantile Normalized plot (Median) - unmethylated", 5, 17)
-            # st.pyplot(fig_qn_unmeth)
-            # ## BETA MIXTURE NORMALIZED
-            # df_m = m_value(df_meth, df_unmeth)
-            # fig_m = density_plot(df_m, "M Values", -25, -5)
-            # st.pyplot(fig_m)
-        st.write(df_beta)
-        df_states = assign_probes_to_state(df_beta)
-        st.write(df_states)
+            # TODO: DONE
+            #plotting.unmethylated_plots(df_log_unmeth)
+
+            ## BETA MIXTURE NORMALIZED
+            df_m = m_value(df_meth, df_unmeth)
+            fig_m = density_plot(df_m, "M Values", -25, -5)
+            st.pyplot(fig_m)
+
+            # TODO: UNDER CONSTRUCTION
+            #df_states = assign_probes_to_state(df_beta)
+            #st.write(df_states)
+            #st.write(df_beta)
+            #st.write(df_beta.iloc[:, 1])
+
+        #def neglikelihood(params, data):
+        #    return -1*scipy.beta.logpdf(data, loc=params[0], scale=params[1]).sum()
+
+        #array = np.array([50, 10])
+        #result = optimize.minimize(neglikelihood, array, args=data)
+        #st.write(result)
+
 
 ##------------------------------------------------------------------------GET DATA-##
 df_meth = pd.read_csv('resources/short_methylated_w_types.csv', sep='\t')
