@@ -68,6 +68,8 @@ def unmethylated_plots():
 
 def beta_value_plots():
 	df_meth, df_unmeth = prep.get_values_as_dataframe_w_types()
+	del df_meth["type"]
+	del df_unmeth["type"]
 	df_beta = prep.beta_value(df_meth, df_unmeth, 100)
 	# showing off the beta values
 	st.header("Beta Values")

@@ -63,5 +63,4 @@ def make_plots():
 			# TODO: DONE
 			plot.unmethylated_plots()
 
-	with st.container():
-		plot.beta_value_plots()
+	# plot.beta_value_plots() # still broken
