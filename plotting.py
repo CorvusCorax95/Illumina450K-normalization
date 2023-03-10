@@ -53,3 +53,11 @@ def unmethylated_plots(df_log_unmeth):
     df_qn_unmeth = quantile_normaliziation(df_log_unmeth, reference_unmeth)
     fig_qn_unmeth = density_plot(df_qn_unmeth, "Quantile Normalized plot (Median) - unmethylated", 5, 17)
     st.pyplot(fig_qn_unmeth)
+
+def beta_value_plots(df_beta):
+    # showing off the beta values
+    fig_beta = density_plot(df_beta, "Beta Values", -0.5, 1.5)
+    st.header("Beta Values")
+    st.write(df_beta)
+    st.write("Beta Values (Methylation Values)")
+    st.pyplot(fig_beta)

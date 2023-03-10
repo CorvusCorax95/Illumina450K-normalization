@@ -1,7 +1,5 @@
 import numpy as np
-import pandas as pd
 import qnorm as qn
-import prepare_data
 import scipy.stats as scipy
 import scipy.optimize as optimize
 
@@ -52,15 +50,14 @@ def assign_probes_to_state(df):
     df = df.applymap(lambda x: set_states(x) if type(x) == float else x)
     return df
 
-# TODO: classification needs to be done with MLE
+# cutoffs from Schröder/Rahmann 2017
 def set_states(x):
 
-
     # unmethylated
-    if float(x) <= 0.3:
+    if float(x) <= 0.25:
         return 'M'
     # fully-methylated
-    elif float(x) >= 0.6:
+    elif float(x) >= 0.75:
         return 'U'
     # hemi-methylated
     else:

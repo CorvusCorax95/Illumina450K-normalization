@@ -1,7 +1,5 @@
 import math
-
 import pandas as pd
-
 import numpy as np
 
 
@@ -47,8 +45,8 @@ def prepare_data():
 
     ## SHORT FILES ##
     # convert methylation-tables to dataframes
-    df_values_meth = pd.read_csv('methylation-rb/short_meth.tsv', sep='\t')
-    df_values_unmeth = pd.read_csv('methylation-rb/short_unmeth.tsv', sep='\t')
+    df_values_meth = pd.read_csv('data/short_meth.tsv', sep='\t')
+    df_values_unmeth = pd.read_csv('data/short_unmeth.tsv', sep='\t')
 
     # set index to probe-id
     df_values_meth = df_values_meth.set_index('probe')

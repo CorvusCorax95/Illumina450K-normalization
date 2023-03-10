@@ -24,3 +24,8 @@ normalizations: implementation of different normalization approaches
 ## Step by Step
 1. Density Plot of Raw Data
 2. Density Plot of logged Data
+
+Organization of my code
+
+src-directory: this can be imported as a module from any other Python program if added to path
+__main__.py: now we have a clean execution because python automatically looks for a file named like this
