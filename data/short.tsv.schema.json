@@ -1,0 +1,337 @@
+{
+  "fields": [
+    {
+      "name": "probe",
+      "type": "string",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_001",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_002",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_003",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_004",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_005",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_006",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_007",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_008",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_009",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_011",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_012",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_013",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_014",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_015",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_016",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_017",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_019",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_020",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_021",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_022",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_023",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_025",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_026",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_027",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_028",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_029",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_030",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_030_IC",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_032",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_033",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_034",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_035",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_036",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_037",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_040",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_042",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_044",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_045",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_046_IC",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_048_IC",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_049_IC",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_050",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_051",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_052",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_053",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_054",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_055",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_056",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_057",
+      "type": "any",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_058",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_059",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_060",
+      "type": "any",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_061",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_063",
+      "type": "any",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_064",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_065",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_066",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_067",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_069_FR",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_076",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_077",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_078",
+      "type": "any",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_079",
+      "type": "any",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_080",
+      "type": "integer",
+      "format": "default"
+    },
+    {
+      "name": "RB_E_081",
+      "type": "integer",
+      "format": "default"
+    }
+  ],
+  "missingValues": [
+    ""
+  ]
+}

@@ -1,0 +1,607 @@
+{
+  "columns": [
+    {
+      "width": 51,
+      "minWidth": 40,
+      "download": false,
+      "formatter": "rowSelection",
+      "titleFormatter": "rowSelection",
+      "resizable": true,
+      "headerSort": false
+    },
+    {
+      "field": "probe",
+      "title": "probe",
+      "width": 93,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_001",
+      "title": "RB_E_001",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_002",
+      "title": "RB_E_002",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_003",
+      "title": "RB_E_003",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_004",
+      "title": "RB_E_004",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_005",
+      "title": "RB_E_005",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_006",
+      "title": "RB_E_006",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_007",
+      "title": "RB_E_007",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_008",
+      "title": "RB_E_008",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_009",
+      "title": "RB_E_009",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_011",
+      "title": "RB_E_011",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_012",
+      "title": "RB_E_012",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_013",
+      "title": "RB_E_013",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_014",
+      "title": "RB_E_014",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_015",
+      "title": "RB_E_015",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_016",
+      "title": "RB_E_016",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_017",
+      "title": "RB_E_017",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_019",
+      "title": "RB_E_019",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_020",
+      "title": "RB_E_020",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_021",
+      "title": "RB_E_021",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_022",
+      "title": "RB_E_022",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_023",
+      "title": "RB_E_023",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_025",
+      "title": "RB_E_025",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_026",
+      "title": "RB_E_026",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_027",
+      "title": "RB_E_027",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_028",
+      "title": "RB_E_028",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_029",
+      "title": "RB_E_029",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_030",
+      "title": "RB_E_030",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_030_IC",
+      "title": "RB_E_030_IC",
+      "width": 132,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_032",
+      "title": "RB_E_032",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_033",
+      "title": "RB_E_033",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_034",
+      "title": "RB_E_034",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_035",
+      "title": "RB_E_035",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_036",
+      "title": "RB_E_036",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_037",
+      "title": "RB_E_037",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_040",
+      "title": "RB_E_040",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_042",
+      "title": "RB_E_042",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_044",
+      "title": "RB_E_044",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_045",
+      "title": "RB_E_045",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_046_IC",
+      "title": "RB_E_046_IC",
+      "width": 132,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_048_IC",
+      "title": "RB_E_048_IC",
+      "width": 132,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_049_IC",
+      "title": "RB_E_049_IC",
+      "width": 132,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_050",
+      "title": "RB_E_050",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_051",
+      "title": "RB_E_051",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_052",
+      "title": "RB_E_052",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_053",
+      "title": "RB_E_053",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_054",
+      "title": "RB_E_054",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_055",
+      "title": "RB_E_055",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_056",
+      "title": "RB_E_056",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_057",
+      "title": "RB_E_057",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_058",
+      "title": "RB_E_058",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_059",
+      "title": "RB_E_059",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_060",
+      "title": "RB_E_060",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_061",
+      "title": "RB_E_061",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_063",
+      "title": "RB_E_063",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_064",
+      "title": "RB_E_064",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_065",
+      "title": "RB_E_065",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_066",
+      "title": "RB_E_066",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_067",
+      "title": "RB_E_067",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_069_FR",
+      "title": "RB_E_069_FR",
+      "width": 135,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_076",
+      "title": "RB_E_076",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_077",
+      "title": "RB_E_077",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_078",
+      "title": "RB_E_078",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_079",
+      "title": "RB_E_079",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_080",
+      "title": "RB_E_080",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    },
+    {
+      "field": "RB_E_081",
+      "title": "RB_E_081",
+      "width": 114,
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true
+    }
+  ]
+}
