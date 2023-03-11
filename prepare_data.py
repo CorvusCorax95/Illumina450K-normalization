@@ -100,14 +100,14 @@ def output_measures(df, title):
 
 # beta-value: methylated / methylated + unmethylated + 100
 def beta_value(df_meth, df_unmeth, offset):
-	df = df_meth
 	sample_list = df_meth.columns.values.tolist()[1:]
-	probes_meth = df_meth.index.values.tolist()
-	# loops through all columns
+	probes = df_meth.index.values.tolist()
+	df = pd.DataFrame(index=probes, columns=sample_list)
+
 	for x in sample_list:
-		for y in probes_meth:
-			df[x][y] = df_meth[x][y] / (
-					df_meth[x][y] + df_unmeth[x][y] + offset)
+		for y in probes:
+			df[x][y] = df_meth[x][y] / (df_meth[x][y] + df_unmeth[x][y] +
+			                            offset)
 	return df
 
 
