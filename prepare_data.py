@@ -69,6 +69,7 @@ def log_data():
 	index = df_meth.index
 
 	sample_list = df_meth.columns.values.tolist()[2:]
+	df_meth.replace(0, 0.01, inplace=True)
 	df_log_meth = np.log2(df_meth[sample_list])
 
 	# find and remove inf values after log
@@ -76,6 +77,7 @@ def log_data():
 	df_log_meth = df_log_meth.dropna()
 
 	sample_list = df_unmeth.columns.values.tolist()[2:]
+	df_unmeth.replace(0, 0.01, inplace=True)
 	df_log_unmeth = np.log2(df_unmeth[sample_list])
 
 	# find and remove inf values after log
