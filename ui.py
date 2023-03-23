@@ -56,11 +56,11 @@ def make_plots():
 		with left_column:
 			st.header("Methylated Plots")
 			# TODO: DONE
-			plot.methylated_plots()
+			#plot.methylated_plots()
 
 		with right_column:
 			st.header("Unmethylated Plots")
 			# TODO: DONE
-			plot.unmethylated_plots()
+			#plot.unmethylated_plots()
 
-	# plot.beta_value_plots() # still broken
+	plot.beta_value_plots() # still broken

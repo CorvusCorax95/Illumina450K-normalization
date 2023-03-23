@@ -71,8 +71,9 @@ def beta_value_plots():
 	del df_meth["type"]
 	del df_unmeth["type"]
 	df_beta = prep.beta_value(df_meth, df_unmeth, 100)
-	# showing off the beta values
-	st.header("Beta Values")
-	st.write(df_beta)
-	st.write("Beta Values (Methylation Values)")
-	st.pyplot(_density_plot(df_beta, "Beta Values", -0.5, 1.5))
+	prep.df_to_h5(df_beta)
+	st.write("Made data.h5.")
+	# st.header("Beta Values")
+	# st.write(df_beta)
+	# st.write("Beta Values (Methylation Values)")
+	# st.pyplot(_density_plot(df_beta, "Beta Values", -0.5, 1.5))

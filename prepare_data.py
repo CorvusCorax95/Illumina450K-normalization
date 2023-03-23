@@ -123,3 +123,8 @@ def m_value(df_meth, df_unmeth):
 			inner = df_meth[x][y] / df_unmeth[x][y]
 			df[x][y] = np.log2(inner)
 	return df
+
+def df_to_h5(df):
+	# delete existing data.h5
+	df.reset_index(drop=True)
+	return df.to_hdf("data.h5", key='df', mode='w')
