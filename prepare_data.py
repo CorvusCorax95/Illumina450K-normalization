@@ -1,6 +1,8 @@
 import math
+
 import pandas as pd
 import numpy as np
+import h5py as h5
 
 """PREPARE DATA
 This file transforms all the nasty inputs we get to pretty little dataframes.
@@ -125,6 +127,17 @@ def m_value(df_meth, df_unmeth):
 	return df
 
 def df_to_h5(df):
-	# delete existing data.h5
+	# delete existing file before
+	sample_list = df.columns.values.tolist()[1:]
 	df.reset_index(drop=True)
-	return df.to_hdf("data.h5", key='df', mode='w')
+	hf = h5.File("mytestfile.h5", "w")
+	group = hf.create_group("data")
+	i = 0
+	for sample in sample_list:
+		array = np.array(df[sample], dtype=np.float64)
+		dset = group.create_dataset(str(i), data=np.sort(array))
+		i = i+1
+	hf.close()
+	#betamix commands
+	#python estimate.py -F -t 1E-5 mytestfile.h5 --resultpath mytestfile-est.h5
+	#python evaluate.py -F -i snps -f pdf mytestfile.h5 mytestfile-est.h5 mytestfile-eval.h5
