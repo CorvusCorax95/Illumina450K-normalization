@@ -103,6 +103,12 @@ def output_measures(df, title):
 # beta-value: methylated / methylated + unmethylated + 100
 def beta_value(df_meth, df_unmeth, offset):
 	sample_list = df_meth.columns.values.tolist()[1:]
+	type_col_m = df_meth["type"]
+	type_col_u = df_unmeth["type"]
+	if "type" in sample_list:
+		del df_meth["type"]
+		del df_unmeth["type"]
+		print("Type Column deleted")
 	probes = df_meth.index.values.tolist()
 	df = pd.DataFrame(index=probes, columns=sample_list)
 
@@ -110,6 +116,7 @@ def beta_value(df_meth, df_unmeth, offset):
 		for y in probes:
 			df[x][y] = df_meth[x][y] / (df_meth[x][y] + df_unmeth[x][y] +
 			                            offset)
+	df.insert(0, "type", type_col_m)
 	return df
 
 
@@ -126,18 +133,64 @@ def m_value(df_meth, df_unmeth):
 			df[x][y] = np.log2(inner)
 	return df
 
-def df_to_h5(df):
-	# delete existing file before
+
+def split_types(df):
+	df_t1 = df.loc[df["type"] == 'I']
+	df_t2 = df.loc[df["type"] == 'II']
+	return df_t1, df_t2
+
+
+def df_to_h5(df, filename):
+	df_t1, df_t2 = split_types(df)
+	# delete existing file first by hand!
 	sample_list = df.columns.values.tolist()[1:]
 	df.reset_index(drop=True)
-	hf = h5.File("mytestfile.h5", "w")
+	filename = filename + ".h5"
+	hf = h5.File(filename, "w")
 	group = hf.create_group("data")
 	i = 0
 	for sample in sample_list:
 		array = np.array(df[sample], dtype=np.float64)
 		dset = group.create_dataset(str(i), data=np.sort(array))
-		i = i+1
+		i = i + 1
 	hf.close()
-	#betamix commands
-	#python estimate.py -F -t 1E-5 mytestfile.h5 --resultpath mytestfile-est.h5
-	#python evaluate.py -F -i snps -f pdf mytestfile.h5 mytestfile-est.h5 mytestfile-eval.h5
+
+
+# betamix commands
+# python estimate.py -F -t 1E-5 mytestfile.h5 --resultpath mytestfile-est.h5
+# python evaluate.py -F -i snps -f pdf mytestfile.h5 mytestfile-est.h5 mytestfile-eval.h5
+
+def betamix_estimates_to_df(path):
+	'''gets the parameter out of the hdf5 file'''
+	f = h5.File(path, "r")
+	key_list = f['estimation'].keys()
+	grp = f['estimation']
+	subgrp = grp["0"]
+	data = subgrp["ab"]
+	return pd.DataFrame(data, index=["U", "H", "M"], columns=["a", "b"])
+
+def get_est_parameters(df, type):
+	if type == 1:
+		aU1 = df['a']['U']
+		bU1 = df['b']['U']
+		aH1 = df['a']['H']
+		bH1 = df['b']['H']
+		aM1 = df['a']['M']
+		bM1 = df['b']['M']
+		print("{aU1, bU1} = {", aU1, ", ", bU1, "}")
+		print("{aH1, bH1} = {", aH1, ", ", bH1, "}")
+		print("{aM1, bM1} = {", aM1, ", ", bM1, "}")
+		list = [aU1, bU1, aH1, bH1, aM1, bM1]
+	else:
+
+		aU2 = df['a']['U']
+		bU2 = df['b']['U']
+		aH2 = df['a']['H']
+		bH2 = df['b']['H']
+		aM2 = df['a']['M']
+		bM2 = df['b']['M']
+		print("{aU2, bU2} = {", aU2, ", ", bU2, "}")
+		print("{aH2, bH2} = {", aH2, ", ", bH2, "}")
+		print("{aM2, bM2} = {", aM2, ", ", bM2, "}")
+		list = [aU2, bU2, aH2, bH2, aM2, bM2]
+	return list

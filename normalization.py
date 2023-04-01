@@ -3,6 +3,8 @@ import qnorm as qn
 import scipy.stats as scipy
 import scipy.optimize as optimize
 
+import prepare_data as prep
+
 
 def mean_normalization(df):
     sample_list = df.columns.values.tolist()[2:]
@@ -25,6 +27,7 @@ def quantile_normaliziation(df, reference):
     return df_qn
 
 # TODO: implement!
+# want to use the estimate.py from betamix my Schröder, Rahmann
 def beta_mixture_normalization(df):
     # 1. Fitting 3-state-beta-mixture models to type I and type II probes separately.
     print("hello")
@@ -71,6 +74,20 @@ def likelihood(params, data):
 
 def neglikelihood(params,data):
     return -1*likelihood(params,data)
+
+
+def bmiq():
+    df_meth, df_unmeth = prep.get_values_as_dataframe_w_types()
+    # df_beta = prep.beta_value(df_meth, df_unmeth, 100)
+    '''Prepping for betamix'''
+    # df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
+    # prep.df_to_h5(df_beta_t1, "type1_probes")
+    # prep.df_to_h5(df_beta_t2, "type2_probes")
+    df = prep.betamix_estimates_to_df(
+        "C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
+        "\\betamix-results\\type1_probes-est.h5")
+    list = prep.get_est_parameters(df, 1)
+    print(list)
 
 # # TODO: UNDER CONSTRUCTION
 # # BMIQ

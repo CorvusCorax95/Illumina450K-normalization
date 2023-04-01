@@ -5,6 +5,7 @@ import streamlit as st
 import normalization as norm
 import prepare_data as prep
 
+# TODO: alle prep.function in die normalization verschieben
 
 def _density_plot(df, title, x1, x2):
 	"""Makes a density-plot from the Dataframe, a title and set boundaries
@@ -67,12 +68,8 @@ def unmethylated_plots():
 
 
 def beta_value_plots():
-	df_meth, df_unmeth = prep.get_values_as_dataframe_w_types()
-	del df_meth["type"]
-	del df_unmeth["type"]
-	df_beta = prep.beta_value(df_meth, df_unmeth, 100)
-	prep.df_to_h5(df_beta)
-	st.write("Made data.h5.")
+	norm.bmiq()
+
 	# st.header("Beta Values")
 	# st.write(df_beta)
 	# st.write("Beta Values (Methylation Values)")
