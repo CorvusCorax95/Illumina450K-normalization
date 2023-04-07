@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import streamlit as st
 
@@ -68,9 +69,18 @@ def unmethylated_plots():
 
 
 def beta_value_plots():
-	norm.bmiq()
 
-	# st.header("Beta Values")
-	# st.write(df_beta)
-	# st.write("Beta Values (Methylation Values)")
-	# st.pyplot(_density_plot(df_beta, "Beta Values", -0.5, 1.5))
+
+	st.header("Beta Values")
+	df_beta = pd.read_csv('df_beta.csv', sep='\t')
+	st.write(df_beta)
+	st.write("Beta Values (Methylation Values)")
+	st.pyplot(_density_plot(df_beta.loc[1:], "Beta Values", -0.5, 1.5))
+	df_bmiq = norm.bmiq()
+	st.header("BMIQ Values")
+	st.write(df_bmiq)
+	st.write("BMIQ Values)")
+	st.pyplot(_density_plot(df_bmiq, "BMIQ Values", -0.5, 0.5))
+
+def plot_random_dataframe(df):
+	st.write(df)

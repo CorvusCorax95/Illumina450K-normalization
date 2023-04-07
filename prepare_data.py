@@ -137,6 +137,8 @@ def m_value(df_meth, df_unmeth):
 def split_types(df):
 	df_t1 = df.loc[df["type"] == 'I']
 	df_t2 = df.loc[df["type"] == 'II']
+	del df_t1[df_t1.columns[0]]
+	del df_t2[df_t2.columns[0]]
 	return df_t1, df_t2
 
 
@@ -160,10 +162,9 @@ def df_to_h5(df, filename):
 # python estimate.py -F -t 1E-5 mytestfile.h5 --resultpath mytestfile-est.h5
 # python evaluate.py -F -i snps -f pdf mytestfile.h5 mytestfile-est.h5 mytestfile-eval.h5
 
-def betamix_estimates_to_df(path):
+def get_parameters(path):
 	'''gets the parameter out of the hdf5 file'''
 	f = h5.File(path, "r")
-	key_list = f['estimation'].keys()
 	grp = f['estimation']
 	subgrp = grp["0"]
 	data = subgrp["ab"]
@@ -177,9 +178,6 @@ def get_est_parameters(df, type):
 		bH1 = df['b']['H']
 		aM1 = df['a']['M']
 		bM1 = df['b']['M']
-		print("{aU1, bU1} = {", aU1, ", ", bU1, "}")
-		print("{aH1, bH1} = {", aH1, ", ", bH1, "}")
-		print("{aM1, bM1} = {", aM1, ", ", bM1, "}")
 		list = [aU1, bU1, aH1, bH1, aM1, bM1]
 	else:
 
@@ -189,8 +187,23 @@ def get_est_parameters(df, type):
 		bH2 = df['b']['H']
 		aM2 = df['a']['M']
 		bM2 = df['b']['M']
-		print("{aU2, bU2} = {", aU2, ", ", bU2, "}")
-		print("{aH2, bH2} = {", aH2, ", ", bH2, "}")
-		print("{aM2, bM2} = {", aM2, ", ", bM2, "}")
 		list = [aU2, bU2, aH2, bH2, aM2, bM2]
 	return list
+
+def get_classes(path, probe_list):
+	'''gets the class to probe and returns dataframe'''
+	f = h5.File(path, "r")
+	grp = f['evaluation']
+	subgrp = grp["0"]
+	subsubgrp = subgrp['mix']
+	data = subsubgrp['classes']
+	return pd.DataFrame(data, index=probe_list, columns=["sample"])
+
+def get_weights(path, probe_list):
+	# TODO: BROKEN
+	'''gets the parameter out of the hdf5 file'''
+	f = h5.File(path, "r")
+	grp = f['estimation']
+	subgrp = grp["0"]
+	data = subgrp["w"]
+	return pd.DataFrame(data, index=probe_list, columns=["U", "H", "M"])

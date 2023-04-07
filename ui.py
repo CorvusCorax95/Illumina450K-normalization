@@ -62,4 +62,5 @@ def make_plots():
 			st.header("Unmethylated Plots")
 			# TODO: DONE
 			#plot.unmethylated_plots()
-	plot.beta_value_plots() # still broken
+
+	plot.beta_value_plots()

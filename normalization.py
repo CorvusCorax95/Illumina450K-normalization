@@ -1,6 +1,7 @@
 import numpy as np
+import pandas as pd
 import qnorm as qn
-import scipy.stats as scipy
+import scipy.stats as stats
 import scipy.optimize as optimize
 
 import prepare_data as prep
@@ -69,7 +70,7 @@ def set_states(x):
     ## I fit 3 different distribution: One beta distribuition for each.
 
 def likelihood(params, data):
-    return scipy.norm.logpdf(data, loc=params[0],scale=params[1]).sum()
+    return stats.norm.logpdf(data, loc=params[0], scale=params[1]).sum()
 
 
 def neglikelihood(params,data):
@@ -77,17 +78,96 @@ def neglikelihood(params,data):
 
 
 def bmiq():
+    '''STEP 1'''
+    '''Fitting of a three-state (unmethylated-U, hemimethylated-H, fully
+    methylated-M) beta mixture model to the type1 and type2 probes
+    separately. For sake of convenience we refer to intermediate allelic
+    methylation as hemimethylation even though hemimethylation
+    is most often used in the context of strand-specific methylation.
+    -> Realized with betamix (Schroeder, Rahmann)'''
     df_meth, df_unmeth = prep.get_values_as_dataframe_w_types()
-    # df_beta = prep.beta_value(df_meth, df_unmeth, 100)
+
     '''Prepping for betamix'''
-    # df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
+    #df_beta = prep.beta_value(df_meth, df_unmeth, 100)
+    #df_beta.to_csv('df_beta.csv', sep='\t')
+    df_beta = pd.read_csv('df_beta.csv', sep='\t', index_col=0)
+    df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
     # prep.df_to_h5(df_beta_t1, "type1_probes")
     # prep.df_to_h5(df_beta_t2, "type2_probes")
-    df = prep.betamix_estimates_to_df(
+    probe_list_t1 = df_meth.loc[df_meth["type"] == "I"].index.values.tolist()
+    probe_list_t2 = df_meth.loc[df_meth["type"] == "II"].index.values.tolist()
+    df_t1_parameters = prep.get_parameters(
         "C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
         "\\betamix-results\\type1_probes-est.h5")
-    list = prep.get_est_parameters(df, 1)
-    print(list)
+    df_t2_parameters = prep.get_parameters(
+        "C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
+        "\\betamix-results\\type2_probes-est.h5")
+    df_t1_weights = prep.get_weights(
+        "C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
+        "\\betamix-results\\type1_probes-est.h5", probe_list_t1)
+    df_t2_weights = prep.get_weights(
+        "C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
+        "\\betamix-results\\type2_probes-est.h5", probe_list_t2)
+    df_w_class_t1 = prep.get_classes(
+        "C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
+        "\\betamix-results\\type1_probes-eval.h5", probe_list_t1)
+    df_w_class_t2 = prep.get_classes(
+        "C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
+        "\\betamix-results\\type2_probes-eval.h5", probe_list_t2)
+
+    '''Prep Step 2 & 3'''
+    ''' Calculate m2U, then let U2L(U2R) = set of U2 probes with 
+    beta-values smaller(larger) than mIIU'''
+    ''' Calculate m2M, then let M2L(M2R) = set of M2 probes with 
+    beta-values smaller(larger) than m2M'''
+
+    m2U = df_t2_parameters['a']['U'] / (df_t2_parameters['a'][
+                                            'U']+df_t2_parameters['b']['U'])
+    m2M = df_t2_parameters['a']['M'] / (df_t2_parameters['a'][
+                                            'M']+df_t2_parameters['b']['M'])
+
+    '''STEP 2'''
+    '''for type2 probes with U-state: transform their probabilities of 
+    belonging to the U-state to quantiles using the inverse of the cumulative
+    beta-distribution with beta parameters (aU2, bU2)'''
+    '''Transform: Inverse Transform sampling?'''
+    u2l_list = []
+    u2r_list= []
+    for probe in probe_list_t2:
+        value = df_beta_t2.loc[probe][1]
+        if value <= m2U:
+            u2l_list.append(probe)
+        else:
+            u2r_list.append(probe)
+    rbe001 = np.array(df_beta_t2['RB_E_001'])
+    '''p: probability of probe belonging to the U state'''
+    p = stats.beta.cdf(rbe001, df_t2_parameters['a']['U'],
+                       df_t2_parameters['b']['U'])
+    q = stats.beta.ppf(p, df_t1_parameters['a']['U'],
+                       df_t1_parameters['b']['U'])
+    print(q)
+    eta2U = q[0]
+    df_bmiq2 = pd.DataFrame(q, columns=['RB_E_001'], index=probe_list_t2)
+    return df_bmiq2
+    '''STEP 3'''
+    '''for type2 probes with M-state: transform their probabilities of 
+    belonging to the M-state to quantiles using the inverse of the cumulative
+    beta-distribution with beta parameters (aM2, bM2)'''
+    m2l_list = []
+    m2r_list= []
+    for probe in probe_list_t2:
+        value = df_beta_t2.loc[probe][1]
+        if value <= m2M:
+            m2l_list.append(probe)
+        else:
+            m2r_list.append(probe)
+
+    eta2M = 0 #normalized values of the type2 U-probes
+    '''STEP 4'''
+    '''for type2 probes with H-state: perform a dilation (scale) 
+    dransformation to "fit" the data into the "gap" with endpoints defined by
+    max(eta2U) and min(eta2M)'''
+
 
 # # TODO: UNDER CONSTRUCTION
 # # BMIQ
