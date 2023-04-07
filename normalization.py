@@ -133,119 +133,65 @@ def bmiq():
     '''Transform: Inverse Transform sampling?'''
     u2l_list = []
     u2r_list= []
-    for probe in probe_list_t2:
-        value = df_beta_t2.loc[probe][1]
-        if value <= m2U:
-            u2l_list.append(probe)
+    df_bmiq_U = None
+    sample_list = df_beta_t2.columns.values.tolist()[2:]
+    for sample in sample_list:
+        q_u_list = []
+        for probe in probe_list_t2:
+            value = df_beta_t2.loc[probe][sample]
+            if value <= m2U:
+                u2l_list.append(probe)
+            else:
+                u2r_list.append(probe)
+            rb = np.array(df_beta_t2[sample][probe])
+            '''p: probability of probe belonging to the U state'''
+            p_u = stats.beta.cdf(rb, df_t2_parameters['a']['U'],
+                         df_t2_parameters['b']['U'])
+            #print("Sample: ", sample, "Probe: ", probe, "pU: ", p_u)
+            q_u = stats.beta.ppf(p_u, df_t1_parameters['a']['U'],
+                         df_t1_parameters['b']['U'])
+            #print("p_U: ", p_u, "q_U: ", p_u)
+            q_u_list.append(q_u)
+        if df_bmiq_U is None:
+            df_bmiq_U = pd.DataFrame(q_u_list, index=probe_list_t2, columns=[
+                sample])
         else:
-            u2r_list.append(probe)
-    rbe001 = np.array(df_beta_t2['RB_E_001'])
-    '''p: probability of probe belonging to the U state'''
-    p = stats.beta.cdf(rbe001, df_t2_parameters['a']['U'],
-                       df_t2_parameters['b']['U'])
-    q = stats.beta.ppf(p, df_t1_parameters['a']['U'],
-                       df_t1_parameters['b']['U'])
-    print(q)
-    eta2U = q[0]
-    df_bmiq2 = pd.DataFrame(q, columns=['RB_E_001'], index=probe_list_t2)
-    return df_bmiq2
+            df_bmiq_U[sample] = q_u_list
+
     '''STEP 3'''
     '''for type2 probes with M-state: transform their probabilities of 
     belonging to the M-state to quantiles using the inverse of the cumulative
     beta-distribution with beta parameters (aM2, bM2)'''
     m2l_list = []
     m2r_list= []
-    for probe in probe_list_t2:
-        value = df_beta_t2.loc[probe][1]
-        if value <= m2M:
-            m2l_list.append(probe)
+    df_bmiq_M = None
+    for sample in sample_list:
+        q_m_list = []
+        for probe in probe_list_t2:
+            value = df_beta_t2.loc[probe][sample]
+            if value <= m2M:
+                m2l_list.append(probe)
+            else:
+                m2r_list.append(probe)
+            rb = np.array(df_beta_t2[sample][probe])
+            '''p: probability of probe belonging to the U state'''
+            p_m = stats.beta.cdf(rb, df_t2_parameters['a']['M'],
+                           df_t2_parameters['b']['M'])
+            q_m = stats.beta.ppf(p_m, df_t1_parameters['a']['M'],
+                           df_t1_parameters['b']['M'])
+            q_m_list.append(q_m)
+        if df_bmiq_M is None:
+            df_bmiq_M = pd.DataFrame(q_m_list, index=probe_list_t2, columns=[
+                sample])
         else:
-            m2r_list.append(probe)
+            df_bmiq_M[sample] = q_m_list
 
-    eta2M = 0 #normalized values of the type2 U-probes
+    # TODO: Find out why we get primarily 0 and 1 in methylated data
+    return df_bmiq_U, df_bmiq_M
+
     '''STEP 4'''
     '''for type2 probes with H-state: perform a dilation (scale) 
     dransformation to "fit" the data into the "gap" with endpoints defined by
     max(eta2U) and min(eta2M)'''
 
-
-# # TODO: UNDER CONSTRUCTION
-# # BMIQ
-#
-#
-# # trying to make data work in betamix
-# df_beta.to_hdf('data.h5', key='df', mode='w')
-#
-# # FITTING BETA DISTRIBUTION TO OUR DATA
-# m = df_beta.iloc[:, 1:66]  # Beta values in Array without classes
-# # transform into numpy array (for fitting)
-# naive_array = m.to_numpy()
-#
-# # fit: Return estimates of shape (if applicable), location, and scale parameters from data. The default
-# # estimation method is Maximum Likelihood Estimation (MLE), but Method of Moments (MM) is also available.
-# beta_params = stats.beta.fit(naive_array[0])
-# # returns probability density function with given parameters (here, parameters from our array)
-# st.write("Beta Distribution PDF")
-# df_beta_pdf = pd.DataFrame(stats.beta.pdf(naive_array, beta_params[0], beta_params[1],
-#                                           beta_params[2], beta_params[3]))
-# fig_beta = plot.density_plot(df_beta_pdf, "beta pdf", -5, 10)
-# st.pyplot(fig_beta)
-#
-# # Teschendorff
-# # Fitting of a three-state (unmethylated-U, hemimethylated-H, fully
-# # methylated-M) beta mixture model to the type1 and type2 probes
-# # separately.
-#
-# # TODO: dataframe df_beta_type1 needs index and column-header
-# st.header("Type I Fitting")
-# type1 = df_beta[df_beta["type"] == 'I'] #full dataframe with just type I probes
-# st.write("Type1: ", type1)
-# type1_array = type1.iloc[:, 1:66].to_numpy() #full dataframe as array for further calculations
-# st.write("Type1_array: ", type1_array)
-# type1_fit = stats.beta.fit(type1_array[0]) #parameters fitting to found beta distribution
-# st.write("Type1_fit: ", type1_fit)
-# df_beta_type1 = pd.DataFrame(stats.beta.pdf(type1_array, type1_fit[0], type1_fit[1],
-#                                             type1_fit[2], type1_fit[3]), columns=sample_list_meth)
-# st.write(df_beta_type1)
-# fig_beta_type1 = plot.density_plot(df_beta_type1, "beta type 1 pdf", -5, 10)
-# st.write("Beta distribution Type 1")
-# st.pyplot(fig_beta_type1)
-#
-# # TODO: dataframe df_beta_type2 needs index and column-header
-# st.header("Type II Fitting")
-# type2 = df_beta[df_beta["type"] == 'II']
-# type2_array = type2.iloc[:, 1:66].to_numpy()
-# type2_fit = stats.beta.fit(type2_array[0])
-# df_beta_type2 = pd.DataFrame(stats.beta.pdf(type2_array, type2_fit[0], type2_fit[1],
-#                                             type2_fit[2], type2_fit[3]))
-# st.write(df_beta_type2)
-# fig_beta_type2 = plot.density_plot(df_beta_type2, "beta type 2 pdf", -5, 10)
-# st.write("Beta distribution Type 2")
-# st.pyplot(fig_beta_type2)
-#
-# # NAIVE CLASSIFICATION WITH CUTOFF POINT
-# st.header("Naive classification")
-#
-# df_states = norm.assign_probes_to_state(df_beta)
-# st.write("Naive Classification of states")
-# df_t = df_states.transpose()
-# df_t.drop('type', inplace=True)
-# st.write(df_t)
-#
-# # TODO: Does not work
-# # Trying to get the sample proportions for initial naive values.
-# sample_proportions = pd.DataFrame()
-#
-# first_time = True
-# # returns normalized values (probabilities for states)
-# for column in df_t:
-#     step = df_t[column].value_counts(normalize=True)
-#     step.to_frame(name=step.iloc[0])
-#
-# # def neg_likelihood(params, data):
-# #    return -1*scipy.beta.logpdf(data, loc=params[0], scale=params[1]).sum()
-#
-# # array = np.array([50, 10])
-# # result = optimize.minimize(neg_likelihood, array, args=data)
-# # st.write(result)
 
