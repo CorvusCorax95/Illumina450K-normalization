@@ -70,20 +70,20 @@ def unmethylated_plots():
 
 def beta_value_plots():
 
-
 	st.header("Beta Values")
 	df_beta = pd.read_csv('df_beta.csv', sep='\t')
 	st.write("Beta Values (Methylation Values)")
 	st.pyplot(_density_plot(df_beta.loc[1:], "Beta Values", -0.25, 1.25))
+	st.write(df_beta)
 	df_bmiq_U, df_bmiq_M = norm.bmiq()
 	st.header("BMIQ U Values")
 	st.write(df_bmiq_U)
-	st.write("BMIQ U Values)")
-	st.pyplot(_density_plot(df_bmiq_U, "BMIQ U Values", -0.1, 0.3))
+	st.write("BMIQ U Values")
+	st.pyplot(_density_plot(df_bmiq_U, "BMIQ U Values", -0.2, 0.3))
 	st.header("BMIQ M Values")
 	st.write(df_bmiq_M)
-	st.write("BMIQ M Values)")
-	st.pyplot(_density_plot(df_bmiq_M, "BMIQ M Values", -0.2, 0.2))
+	st.write("BMIQ M Values")
+	st.pyplot(_density_plot(df_bmiq_M, "BMIQ M Values", -0.2, 0.3))
 
 def plot_random_dataframe(df):
 	st.write(df)

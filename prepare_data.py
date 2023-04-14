@@ -162,39 +162,22 @@ def df_to_h5(df, filename):
 # python estimate.py -F -t 1E-5 mytestfile.h5 --resultpath mytestfile-est.h5
 # python evaluate.py -F -i snps -f pdf mytestfile.h5 mytestfile-est.h5 mytestfile-eval.h5
 
-def get_parameters(path):
+def get_parameters(path, n):
 	'''gets the parameter out of the hdf5 file'''
+	num = str(n)
 	f = h5.File(path, "r")
 	grp = f['estimation']
-	subgrp = grp["0"]
+	subgrp = grp[num]
 	data = subgrp["ab"]
 	return pd.DataFrame(data, index=["U", "H", "M"], columns=["a", "b"])
 
-def get_est_parameters(df, type):
-	if type == 1:
-		aU1 = df['a']['U']
-		bU1 = df['b']['U']
-		aH1 = df['a']['H']
-		bH1 = df['b']['H']
-		aM1 = df['a']['M']
-		bM1 = df['b']['M']
-		list = [aU1, bU1, aH1, bH1, aM1, bM1]
-	else:
-
-		aU2 = df['a']['U']
-		bU2 = df['b']['U']
-		aH2 = df['a']['H']
-		bH2 = df['b']['H']
-		aM2 = df['a']['M']
-		bM2 = df['b']['M']
-		list = [aU2, bU2, aH2, bH2, aM2, bM2]
-	return list
-
-def get_classes(path, probe_list):
+def get_classes(path, probe_list, n):
 	'''gets the class to probe and returns dataframe'''
+	'''0: unmethylated, 1: hemimethylated, 2: methylated'''
+	num = str(n)
 	f = h5.File(path, "r")
 	grp = f['evaluation']
-	subgrp = grp["0"]
+	subgrp = grp[num]
 	subsubgrp = subgrp['mix']
 	data = subsubgrp['classes']
 	return pd.DataFrame(data, index=probe_list, columns=["sample"])
