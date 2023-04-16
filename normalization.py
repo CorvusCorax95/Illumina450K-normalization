@@ -53,7 +53,7 @@ def neglikelihood(params, data):
 	return -1 * likelihood(params, data)
 
 
-def bmiq_unmethylated(df_beta_t2, probe_list_t2, sample_list,
+def bmiq_unmethylated(df_t2_unmethylated, unmethylated_probes,
                       mean_type2_unmethylated, df_t2_parameters,
                       df_t1_parameters):
 	'''STEP 2'''
@@ -63,42 +63,34 @@ def bmiq_unmethylated(df_beta_t2, probe_list_t2, sample_list,
 	'''Transform: Inverse Transform sampling?'''
 	u2l_list = []
 	u2r_list = []
-	df_bmiq_unmethylated = None
-	for sample in sample_list:
-		q_u_list = []
-		for probe in probe_list_t2:
-			value = df_beta_t2.loc[probe][sample]
-			if value <= mean_type2_unmethylated:
-				u2l_list.append(probe)
-			else:
-				u2r_list.append(probe)
-			if probe in u2l_list:
-				rb = np.array(df_beta_t2[sample][probe])
-				'''p: probability of probe belonging to the U state'''
-				p_u = stats.beta.cdf(rb, df_t2_parameters['a']['U'],
-				                     df_t2_parameters['b']['U'])
-				q_u = stats.beta.ppf(p_u, df_t1_parameters['a']['U'],
-				                     df_t1_parameters['b']['U'])
-				q_u_list.append(q_u)
-			else:
-				rb = np.array(df_beta_t2[sample][probe])
-				'''p: probability of probe belonging to the U state'''
-				p_u = 1 - stats.beta.cdf(rb, df_t2_parameters['a']['U'],
-				                         df_t2_parameters['b']['U'])
-				q_u = 1 - stats.beta.ppf(p_u, df_t1_parameters['a']['U'],
-				                         df_t1_parameters['b']['U'])
-				q_u_list.append(q_u)
-		if df_bmiq_unmethylated is None:
-			df_bmiq_unmethylated = pd.DataFrame(q_u_list, index=probe_list_t2,
-			                                    columns=[
-				                                    sample])
+	q_u_list = []
+	for probe in unmethylated_probes:
+		value = df_t2_unmethylated.loc[probe]
+		if value <= mean_type2_unmethylated:
+			u2l_list.append(probe)
 		else:
-			df_bmiq_unmethylated[sample] = q_u_list
-	return df_bmiq_unmethylated
+			u2r_list.append(probe)
+		if probe in u2l_list:
+			rb = np.array(df_t2_unmethylated[probe])
+			'''p: probability of probe belonging to the U state'''
+			p_u = stats.beta.cdf(rb, df_t2_parameters['a']['U'],
+			                     df_t2_parameters['b']['U'])
+			q_u = stats.beta.ppf(p_u, df_t1_parameters['a']['U'],
+			                     df_t1_parameters['b']['U'])
+			q_u_list.append(q_u)
+		else:
+			rb = np.array(df_t2_unmethylated[probe])
+			'''p: probability of probe belonging to the U state'''
+			p_u = 1 - stats.beta.cdf(rb, df_t2_parameters['a']['U'],
+			                         df_t2_parameters['b']['U'])
+			q_u = 1 - stats.beta.ppf(p_u, df_t1_parameters['a']['U'],
+			                         df_t1_parameters['b']['U'])
+			q_u_list.append(q_u)
+	df = pd.DataFrame(q_u_list, index=unmethylated_probes)
+	return df, q_u_list
 
 
-def bmiq_methylated(df_beta_t2, probe_list_t2, sample_list,
-                    mean_type2_methylated,
+def bmiq_methylated(df_t2_methylated, methylated_probes, mean_type2_methylated,
                     df_t2_parameters, df_t1_parameters):
 	'''STEP 3'''
 	'''for type2 probes with M-state: transform their probabilities of 
@@ -106,70 +98,65 @@ def bmiq_methylated(df_beta_t2, probe_list_t2, sample_list,
 	beta-distribution with beta parameters (aM2, bM2)'''
 	m2l_list = []
 	m2r_list = []
-	df_bmiq_methylated = None
-	for sample in sample_list:
-		q_m_list = []
-		for probe in probe_list_t2:
-			value = df_beta_t2.loc[probe][sample]
-			if value <= mean_type2_methylated:
-				m2l_list.append(probe)
-			else:
-				m2r_list.append(probe)
-			if probe in m2l_list:
-				rb = np.array(df_beta_t2[sample][probe])
-				'''p: probability of probe belonging to the U state'''
-				p_m = stats.beta.cdf(rb, df_t2_parameters['a']['M'],
-				                     df_t2_parameters['b']['M'])
-				if p_m < 1.0e-100:
-					p_m = 1.0e-100
-				# print("Sample: ", sample, "Probe: ", probe, "pM: ", p_m)
-				q_m = stats.beta.ppf(p_m, df_t1_parameters['a']['M'],
-				                     df_t1_parameters['b']['M'], loc=0, scale=1)
-				# print("p_M: ", p_m, "q_M: ", q_m)
-				q_m_list.append(q_m)
-			else:
-				rb = np.array(df_beta_t2[sample][probe])
-				'''p: probability of probe belonging to the U state'''
-				p_m = 1 - stats.beta.cdf(rb, df_t2_parameters['a']['M'],
-				                         df_t2_parameters['b']['M'])
-				if p_m < 1.0e-100:
-					p_m = 1.0e-100
-				q_m = 1 - stats.beta.ppf(p_m, df_t1_parameters['a']['M'],
-				                         df_t1_parameters['b']['M'], loc=0,
-				                         scale=1)
-				q_m_list.append(q_m)
-
-		if df_bmiq_methylated is None:
-			df_bmiq_methylated = pd.DataFrame(q_m_list, index=probe_list_t2,
-			                                  columns=[
-				                                  sample])
+	q_m_list = []
+	for probe in methylated_probes:
+		value = df_t2_methylated.loc[probe]
+		if value <= mean_type2_methylated:
+			m2l_list.append(probe)
 		else:
-			df_bmiq_methylated[sample] = q_m_list
-	return df_bmiq_methylated
+			m2r_list.append(probe)
+		if probe in m2l_list:
+			rb = np.array(df_t2_methylated[probe])
+			'''p: probability of probe belonging to the U state'''
+			p_m = stats.beta.cdf(rb, df_t2_parameters['a']['M'],
+			                     df_t2_parameters['b']['M'])
+			if p_m < 1.0e-100:
+				p_m = 1.0e-100
+			q_m = stats.beta.ppf(p_m, df_t1_parameters['a']['M'],
+			                     df_t1_parameters['b']['M'], loc=0, scale=1)
+			q_m_list.append(q_m)
+		else:
+			rb = np.array(df_t2_methylated[probe])
+			'''p: probability of probe belonging to the U state'''
+			p_m = 1 - stats.beta.cdf(rb, df_t2_parameters['a']['M'],
+			                         df_t2_parameters['b']['M'])
+			if p_m < 1.0e-100:
+				p_m = 1.0e-100
+			q_m = 1 - stats.beta.ppf(p_m, df_t1_parameters['a']['M'],
+			                         df_t1_parameters['b']['M'], loc=0,
+			                         scale=1)
+			q_m_list.append(q_m)
+
+	df = pd.DataFrame(q_m_list, index=methylated_probes)
+	return df, q_m_list
 
 
-def bmiq_hemimethylated(df_t2_hemimethylated,df_t2_unmethylated,
-                        df_t2_methylated,
-                        probe_list_t2_h,
-                        sample_list,
-                        mean_type2_methylated):
+def bmiq_hemimethylated(df_t2_hemimethylated, df_t2_unmethylated,
+                        df_t2_methylated, eta_u_list,
+                        eta_m_list, hemimethylated_probes):
 	'''STEP 4'''
 	'''for type2 probes with H-state: perform a dilation (scale) 
 	transformation to "fit" the data into the "gap" with endpoints defined by
 	max(eta2U) and min(eta2M)'''
-	df_bmiq_methylated = None
-	for sample in sample_list:
-		q_m_list = []
-		maxH = df_t2_hemimethylated[sample].max()
-		minH = df_t2_hemimethylated[sample].min()
-		minM = df_t2_methylated[sample].min()
-		maxU = df_t2_unmethylated[sample].max()
-		deltaH = maxH-minH
-		deltaUH = minH - maxU
-		deltaHM = minM - maxH
+	df = None
+	eta_2_H_list = []
+	maxH = df_t2_hemimethylated.max()
+	minH = df_t2_hemimethylated.min()
+	minM = df_t2_methylated.min()
+	maxU = df_t2_unmethylated.max()
+	delta_beta_H = maxH - minH
+	deltaUH = minH - maxU
+	deltaHM = minM - maxH
+	nminH = max(eta_u_list) - deltaUH
+	nmaxH = min(eta_m_list) - deltaHM
 
-
-	#return df_bmiq_hemimethylated
+	delta_eta_H = nmaxH - nminH
+	dilation_factor = delta_eta_H / delta_beta_H
+	for probe in hemimethylated_probes:
+		eta_2_H = nminH + dilation_factor * (df_t2_hemimethylated[probe] - minH)
+		eta_2_H_list.append(eta_2_H)
+	df = pd.DataFrame(eta_2_H_list, index=hemimethylated_probes)
+	return df
 
 
 def bmiq():
@@ -190,71 +177,123 @@ def bmiq():
 	sample_list = df_beta_t2.columns.values.tolist()
 	# prep.df_to_h5(df_beta_t1, "type1_probes")
 	# prep.df_to_h5(df_beta_t2, "type2_probes")
+	'''list with all names of probes with type 2'''
 	probe_list_t2 = df_meth.loc[df_meth["type"] == "II"].index.values.tolist()
 
-	df_classes_t2 = None # all classes to all samples
-	for sample in sample_list:
-		n = 0
-
+	'''dataframe with all classes to all samples and type 2 probes'''
+	df_classes_t2 = None
+	df_bmiq = None
+	for n, sample in enumerate(sample_list):
+		'''parameters per sample (per type)'''
 		df_t1_parameters = prep.get_parameters(
 			"C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
 			"\\betamix-results\\type1_probes-est.h5", n)
 		df_t2_parameters = prep.get_parameters(
 			"C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
 			"\\betamix-results\\type2_probes-est.h5", n)
+		'''classes per sample (type 2)'''
 		df_classes = prep.get_classes(
 			"C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
 			"\\betamix-results\\type2_probes-eval.h5", probe_list_t2, n)
-		a = []
+		'''list with classes for type 2 probes (per sample)'''
 		a = df_classes["sample"].to_numpy()
+
+		'''extends df_classes_t2 for each sample'''
 		if df_classes_t2 is None:
 			df_classes_t2 = pd.DataFrame(a, index=probe_list_t2,
-			                                  columns=[sample])
+			                             columns=[sample])
 		else:
 			df_classes_t2[sample] = a
-		n = n + 1
 
-	#TODO: Redo everything with fitting classes.
-	df_t2_unmethylated = df_beta_t2.loc[df_beta_t2["class"] == 0]
-	df_t2_methylated = df_beta_t2.loc[df_beta_t2["class"] == 2]
-	df_t2_hemimethylated = df_beta_t2.loc[df_beta_t2["class"] == 1]
+		'''lists with probes per sample'''
+		unmethylated_probes = df_classes_t2.loc[df_classes_t2[sample] ==
+		                                        0].index.values.tolist()
+		methylated_probes = df_classes_t2.loc[df_classes_t2[sample] ==
+		                                      2].index.values.tolist()
+		hemimethylated_probes = df_classes_t2.loc[df_classes_t2[sample] ==
+		                                          1].index.values.tolist()
+		'''dataframes with corresponding probes'''
+		df_t2_unmethylated = df_beta_t2[sample].filter(unmethylated_probes,
+		                                               axis=0)
+		df_t2_methylated = df_beta_t2[sample].filter(methylated_probes,
+		                                             axis=0)
+		df_t2_hemimethylated = df_beta_t2[sample].filter(hemimethylated_probes,
+		                                                 axis=0)
+		'''Prep Step 2 & 3'''
+		'''Calculate mean_type2_unmethylated, then let U2L(U2R) = set of U2
+		probes with beta-values smaller(larger) than mean_type2_unmethylated'''
+		''' Calculate mean_type2_methylated, then let M2L(M2R) = set of M2
+		probes with beta-values smaller(larger) than mean_type2_methylated'''
 
-	probe_list_t2_u = df_t2_unmethylated.index.values.tolist()
-	probe_list_t2_m = df_t2_methylated.index.values.tolist()
-	probe_list_t2_h = df_t2_hemimethylated.index.values.tolist()
-	'''Prep Step 2 & 3'''
-	'''Calculate mean_type2_unmethylated, then let U2L(U2R) = set of U2 probes 
-	with beta-values smaller(larger) than mean_type2_unmethylated '''
-	''' Calculate mean_type2_methylated, then let M2L(M2R) = set of M2 probes with 
-	beta-values smaller(larger) than mean_type2_methylated'''
+		mean_type2_unmethylated = df_t2_parameters['a']['U'] / (
+				df_t2_parameters[
+					'a']['U'] +
+				df_t2_parameters[
+					'b']['U'])
+		mean_type2_methylated = df_t2_parameters['a']['M'] / (df_t2_parameters[
+			                                                      'a']['M'] +
+		                                                      df_t2_parameters[
+			                                                      'b']['M'])
+		mean_type2_hemimethylated = df_t2_parameters['a']['H'] / (
+				df_t2_parameters[
+					'a']['H'] +
+				df_t2_parameters[
+					'b']['H'])
 
-	mean_type2_unmethylated = df_t2_parameters['a']['U'] / (df_t2_parameters[
-		                                                        'a']['U'] +
-	                                                        df_t2_parameters[
-		                                                        'b']['U'])
-	mean_type2_methylated = df_t2_parameters['a']['M'] / (df_t2_parameters[
-		                                                      'a']['M'] +
-	                                                      df_t2_parameters[
-		                                                      'b']['M'])
-	mean_type2_hemimethylated = df_t2_parameters['a']['H'] / (df_t2_parameters[
-		                                                          'a']['H'] +
-	                                                          df_t2_parameters[
-		                                                          'b']['H'])
+		'''list with bmiq-normalized, unmethylated values of type 2 probes
+		order equal to unmethylated_probes'''
+		'''
+		SPECIAL CASE:
+		If there are no values of one of the three classes, e.g. no 
+		methylated values (RB_E_027) then we cannot perform BMIQ'''
+		if len(unmethylated_probes) == 0 or len(methylated_probes) == 0 or len(
+				hemimethylated_probes) == 0:
+			print("Sample: ", sample, "\nNormalization with BMIQ not possible.")
+			pass
+		else:
+			df_unmethylated_values, eta_u_list = (bmiq_unmethylated(
+				df_t2_unmethylated,
+				unmethylated_probes,
+				mean_type2_unmethylated,
+				df_t2_parameters,
+				df_t1_parameters))
+			df_methylated_values, eta_m_list = bmiq_methylated(df_t2_methylated,
+			                                                   methylated_probes,
+			                                                   mean_type2_methylated,
+			                                                   df_t2_parameters,
+			                                                   df_t1_parameters)
+			# print("----------", sample, "--------")
+			# print("n: ", n)
+			# print(len(unmethylated_probes) + len(hemimethylated_probes) + len(
+			# 	methylated_probes))
+			# print(len(eta_m_list))
 
-	df_bmiq_unmethylated = bmiq_unmethylated(df_t2_unmethylated,
-	                                         probe_list_t2_u,
-	                                         sample_list,
-	                                         mean_type2_unmethylated,
-	                                         df_t2_parameters, df_t1_parameters)
-	df_bmiq_methylated = bmiq_methylated(df_t2_methylated, probe_list_t2_m,
-	                                     sample_list,
-	                                     mean_type2_methylated,
-	                                     df_t2_parameters, df_t1_parameters)
-	df_bmiq_hemimethylated = bmiq_hemimethylated(df_t2_hemimethylated,
-	                                             df_t2_unmethylated,
-	                                             df_t2_methylated,
-	                                             probe_list_t2_h,
-	                                             sample_list,
-	                                             mean_type2_methylated)
-
-	return df_bmiq_unmethylated, df_bmiq_methylated#, df_bmiq_hemimethylated
+			df_hemimethylated_values = bmiq_hemimethylated(df_t2_hemimethylated,
+			                                               df_t2_unmethylated,
+			                                               df_t2_methylated,
+			                                               eta_u_list,
+			                                               eta_m_list,
+			                                               hemimethylated_probes)
+			'''to save everything in one dataframe I have to stick everything 
+			back together, such that all probes have their respective normalized 
+			values.
+			so i have to rebuild the columns:
+			- unmethylate_values, methylated_valued and hemimethylated_values 
+			sticked together
+			- sort by probe name
+			- append du df_bmiq'''
+			frames = [df_unmethylated_values, df_methylated_values,
+			          df_hemimethylated_values]
+			normalized_values = pd.concat(frames)
+			if df_bmiq is None:
+				df_bmiq = pd.DataFrame(normalized_values.to_numpy(),
+				                       index=probe_list_t2, columns=[sample])
+			else:
+				df_bmiq[sample] = normalized_values
+			if (sample == "RB_E_001") or (sample == "RB_E_002"):
+				print("Normalized Values")
+				print(normalized_values)
+				print("DF_BMIQ")
+				print(df_bmiq)
+	print(df_bmiq)
+	return df_bmiq
