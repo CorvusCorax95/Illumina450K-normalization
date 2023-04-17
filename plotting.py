@@ -6,6 +6,7 @@ import streamlit as st
 import normalization as norm
 import prepare_data as prep
 
+
 # TODO: alle prep.function in die normalization verschieben
 
 def _density_plot(df, title, x1, x2):
@@ -17,9 +18,19 @@ def _density_plot(df, title, x1, x2):
 	plt.title(title)
 
 
+def _boxplot(df, title):
+	"""Makes a density-plot from the Dataframe, a title and set boundaries
+	for the x axis"""
+	plt.style.use('dark_background')
+	plt.boxplot(df)
+	# plt.legend([])
+	plt.title(title)
+
+
 def methylated_plots():
 	df_log_meth, df_log_unmeth = prep.log_data()
 	st.pyplot(_density_plot(df_log_meth, "Logged plot - methylated", 5, 17))
+
 	# MEAN NORMALIZED
 	df_meannorm_meth = norm.mean_normalization(df_log_meth)
 	st.pyplot(
@@ -69,17 +80,29 @@ def unmethylated_plots():
 
 
 def beta_value_plots():
-
 	st.header("Beta Values")
 	df_beta = pd.read_csv('df_beta.csv', sep='\t')
 	st.write("Beta Values (Methylation Values)")
-	st.pyplot(_density_plot(df_beta.loc[1:], "Beta Values", -0.25, 1.25))
-	st.write(df_beta)
+	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
+	st.pyplot(_density_plot(df_beta_t1.loc[1:], "Beta Values Type 1",
+	                        -0.5, 2.25))
+	st.pyplot(_density_plot(df_beta_t2.loc[1:], "Beta Values type 2",
+	                        -0.5, 2.25))
 	df_bmiq = norm.bmiq()
 	st.header("BMIQ Values")
+	st.pyplot(_density_plot(df_bmiq, "BMIQ Values", -0.5, 2.25))
+	st.write(df_beta_t2.loc[:, df_beta_t2.columns != 'type'])
+	st.pyplot(_boxplot(df_beta_t2.loc[:, df_beta_t2.columns != 'type'],
+	                   "Beta Value Boxplot"))
 	st.write(df_bmiq)
-	st.write("BMIQ Values")
-	st.pyplot(_density_plot(df_bmiq, "BMIQ Values", -0.5, 2.5))
+	st.pyplot(_boxplot(df_bmiq, "BMIQ Normalized Boxplot"))
+
+
+# st.pyplot(_boxplot(df_bmiq, "Title"))
+# plot_random_dataframe(df_beta)
+
 
 def plot_random_dataframe(df):
-	st.write(df)
+	from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, \
+		DataReturnMode
+	st.write(AgGrid(df))

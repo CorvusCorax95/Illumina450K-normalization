@@ -290,10 +290,10 @@ def bmiq():
 				                       index=probe_list_t2, columns=[sample])
 			else:
 				df_bmiq[sample] = normalized_values
-			if (sample == "RB_E_001") or (sample == "RB_E_002"):
-				print("Normalized Values")
-				print(normalized_values)
-				print("DF_BMIQ")
-				print(df_bmiq)
-	print(df_bmiq)
+	# 		if (sample == "RB_E_001") or (sample == "RB_E_002"):
+	# 			print("Normalized Values")
+	# 			print(normalized_values)
+	# 			print("DF_BMIQ")
+	# 			print(df_bmiq)
+	# print(df_bmiq)
 	return df_bmiq
