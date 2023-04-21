@@ -15,7 +15,6 @@ def _probetype_to_dataframe(input):
 	df = pd.read_csv(input, sep=',')
 
 	# set probes as index
-
 	df_i = df.set_index('probe')
 	return df_i
 
@@ -171,6 +170,7 @@ def get_parameters(path, n):
 	data = subgrp["ab"]
 	return pd.DataFrame(data, index=["U", "H", "M"], columns=["a", "b"])
 
+
 def get_classes(path, probe_list, n):
 	'''gets the class to probe and returns dataframe'''
 	'''0: unmethylated, 1: hemimethylated, 2: methylated'''
@@ -181,6 +181,7 @@ def get_classes(path, probe_list, n):
 	subsubgrp = subgrp['mix']
 	data = subsubgrp['classes']
 	return pd.DataFrame(data, index=probe_list, columns=["sample"])
+
 
 def get_weights(path, probe_list):
 	# TODO: BROKEN
