@@ -1,8 +1,7 @@
 import streamlit as st
-import pandas as pd
+import time
 
 import plotting as plot
-import prepare_data as prep
 
 """ UI.py
 This class is dealing with the Streamlit Structure. Single Figures etc. are 
@@ -67,21 +66,20 @@ def make_plots():
 		mean_df = st.checkbox('Mean Normalized Dataframe')
 		minmax_df = st.checkbox('Minmax Normalized Dataframe')
 
+	logged = st.checkbox("Show Logged Data")
 
-	if st.checkbox("Show Logged Data"):
-		with tab_raw:
-			plot.logged_plot()
 	if st.button("Start Normalization", key="start"):
+		with tab_raw:
+			if logged:
+				plot.logged_plot()
 		with tab_norm:
 			if b_mean_norm:
-				plot.mean_normalized_plots(mean_df)
+				plot.mean_normalized_plots(
+					mean_df)
 			if b_qn_norm:
 				plot.quantile_normalized_plots(qn_df)
 			if b_minmax_norm:
 				plot.min_max_normalized_plots(minmax_df)
-			if beta_plot:
-				plot.beta_value_plots(beta_df, types_df)
-			if b_bmiq_norm:
-				plot.bmiq_plots(bmiq_df, boxplot_df)
-# #TODO: DONE
-# plot.beta_value_plots()
+			if beta_plot or b_bmiq_norm:
+				plot.everything_beta(beta_df, types_df, bmiq_df, boxplot_df,
+				                     b_bmiq_norm, beta_plot)

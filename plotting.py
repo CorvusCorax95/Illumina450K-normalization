@@ -7,8 +7,6 @@ import normalization as norm
 import prepare_data as prep
 
 
-# TODO: alle prep.function in die normalization verschieben
-
 def _density_plot(df, title, x1, x2):
 	"""Makes a density-plot from the Dataframe, a title and set boundaries
 	for the x axis"""
@@ -59,6 +57,7 @@ def mean_normalized_plots(show_df):
 			              3))
 		if show_df:
 			st.write(df_meannorm_unmeth)
+	return df_meannorm_meth, df_meannorm_unmeth
 
 
 def min_max_normalized_plots(show_df):
@@ -123,38 +122,45 @@ def quantile_normalized_plots(show_df):
 		                        5, 17))
 
 
-def beta_value_plots(beta, types):
-	df_beta = pd.read_csv('df_beta.csv', sep='\t')
+@st.cache_data
+def everything_beta(beta, types, bmiq, boxplot, bmiq_norm, beta_plot):
+	df_log_meth, df_log_unmeth = prep.log_data()
+	df_beta = prep.beta_value(df_log_meth, df_log_unmeth, 100)
 	st.write("Beta Values (Methylation Values)")
 	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
+	print(df_beta_t1)
+	if beta_plot: #fine
+		_beta_value_plots(beta, types, df_beta, df_beta_t1, df_beta_t2)
+	if bmiq_norm:
+		_bmiq_plots(bmiq, boxplot, df_beta_t2)
+
+
+@st.cache_data
+def _beta_value_plots(beta, types, df_beta, df_beta_t1, df_beta_t2):
 	col_left, col_right = st.columns(2)
 	if beta:
 		st.write(df_beta)
 	with col_left:
 		if types:
 			st.write(df_beta_t1)
-		st.pyplot(_density_plot(df_beta_t1.loc[1:], "Beta Values Type 1",
-		                        -0.5, 2.25))
+		st.pyplot(_density_plot(df_beta_t1, "Beta Values Type 1",
+		                        -0.1, 0.2))
 	with col_right:
 		if types:
 			st.write(df_beta_t2)
-		st.pyplot(_density_plot(df_beta_t2.loc[1:], "Beta Values type 2",
-		                        -0.5, 2.25))
+		st.pyplot(_density_plot(df_beta_t2, "Beta Values type 2",
+		                        -0.1, 0.2))
 
 
-def bmiq_plots(bmiq, boxplot):
-	df_beta = pd.read_csv('df_beta.csv', sep='\t')
-	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
+@st.cache_data
+def _bmiq_plots(bmiq, boxplot, df_beta_t2):
 	df_bmiq = norm.bmiq()
 	if bmiq:
 		st.write(df_bmiq)
-	col_left, col_right = st.columns(2)
 	st.pyplot(_density_plot(df_bmiq, "BMIQ Values", -0.5, 2.25))
 	if boxplot:
 		bmiq_boxplots(df_beta_t2, df_bmiq)
 
-
-# st.write(df_beta_t2.loc[:, df_beta_t2.columns != 'type'])
 
 def bmiq_boxplots(df_beta_t2, df_bmiq):
 	st.pyplot(_boxplot(df_beta_t2.loc[:, df_beta_t2.columns != 'type'],
@@ -164,6 +170,5 @@ def bmiq_boxplots(df_beta_t2, df_bmiq):
 
 
 def plot_random_dataframe(df):
-	from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, \
-		DataReturnMode
+	from st_aggrid import AgGrid
 	st.write(AgGrid(df))
