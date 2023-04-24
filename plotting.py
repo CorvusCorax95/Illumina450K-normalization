@@ -144,12 +144,12 @@ def _beta_value_plots(beta, types, df_beta, df_beta_t1, df_beta_t2):
 		if types:
 			st.write(df_beta_t1)
 		st.pyplot(_density_plot(df_beta_t1, "Beta Values Type 1",
-		                        -0.1, 0.2))
+		                        0.0, 0.15))
 	with col_right:
 		if types:
 			st.write(df_beta_t2)
 		st.pyplot(_density_plot(df_beta_t2, "Beta Values type 2",
-		                        -0.1, 0.2))
+		                        0.0, 0.15))
 
 
 @st.cache_data

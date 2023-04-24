@@ -19,7 +19,7 @@ def _probetype_to_dataframe(input):
 	return df_i
 
 
-def _add_probetypes(df_target):
+def add_probetypes(df_target):
 	"""adding probetypes (I and II) to my dataframe	to distinguish between
 	Infinium I and Infinium II probes"""
 	df_450 = _probetype_to_dataframe('resources/illumina-table-450.csv')
@@ -50,8 +50,8 @@ def get_values_as_dataframe_w_types():
 
 	"""	Matches probe types (Infinium I or Infinium II) from the df_450 file (
 	file from Illumina with	mapping of probename to probetype) """
-	df_meth_w_types = _add_probetypes(df_values_meth)
-	df_unmeth_w_types = _add_probetypes(df_values_unmeth)
+	df_meth_w_types = add_probetypes(df_values_meth)
+	df_unmeth_w_types = add_probetypes(df_values_unmeth)
 
 	"""Saves in case of problems"""
 	df_meth_w_types.to_csv('methylated_w_types.csv', sep='\t')
@@ -82,9 +82,7 @@ def log_data():
 	df_log_unmeth.replace([np.inf, -np.inf], np.nan, inplace=True)
 	df_log_unmeth = df_log_unmeth.dropna()
 
-	df_log_meth_t = _add_probetypes(df_log_meth)
-	df_log_unmeth_t = _add_probetypes(df_log_unmeth)
-	return df_log_meth_t, df_log_unmeth_t
+	return df_log_meth, df_log_unmeth
 
 
 # calculates means of all samples
@@ -99,8 +97,9 @@ def output_measures(df, title):
 
 
 # beta-value: methylated / methylated + unmethylated + 100
-def beta_value(df_meth, df_unmeth, offset):
-
+def beta_value(df_log_meth, df_log_unmeth, offset):
+	df_meth = add_probetypes(df_log_meth)
+	df_unmeth = add_probetypes(df_log_unmeth)
 	sample_list = df_meth.columns.values.tolist()[1:]
 	type_col_m = df_meth["type"]
 	if "type" in sample_list:
