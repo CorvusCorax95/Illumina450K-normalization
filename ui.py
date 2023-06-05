@@ -1,7 +1,12 @@
+import shutil
+import os
+import glob
+
 import streamlit as st
 import time
 
 import plotting as plot
+import user
 
 """ UI.py
 This class is dealing with the Streamlit Structure. Single Figures etc. are 
@@ -49,7 +54,6 @@ def make_header():
 
 def make_plots():
 	"""Cares about all the plots and Dataframe-Views"""
-	tab_raw, tab_norm = st.tabs(["Original Data", "Normalized Data"])
 	with st.sidebar:
 		st.write("What normalizations do you want to see?")
 		b_mean_norm = st.checkbox('Mean Normalization')
@@ -57,29 +61,43 @@ def make_plots():
 		b_minmax_norm = st.checkbox('Min-Max Normalization')
 		b_bmiq_norm = st.checkbox('Beta-Mixture-Quantile Normalization')
 		st.info('Decide here if you want to see the Dataframes.')
-		beta_df = st.checkbox('Beta Values as Dataframe')
-		beta_plot = st.checkbox('Beta Values as Plot')
-		types_df = st.checkbox('Beta Values as Dataframe (Type sorted)')
-		bmiq_df = st.checkbox('BMIQ-Normalized Dataframe')
-		boxplot_df = st.checkbox('Boxplots for BMIQ')
-		qn_df = st.checkbox('Quantile Normalized Dataframe')
-		mean_df = st.checkbox('Mean Normalized Dataframe')
-		minmax_df = st.checkbox('Minmax Normalized Dataframe')
+		show_beta_df = st.checkbox('Beta Values as Dataframe')
+		show_beta_plot = st.checkbox('Beta Values as Plot')
+		show_types_df = st.checkbox('Beta Values as Dataframe (Type sorted)')
+		show_bmiq_df = st.checkbox('BMIQ-Normalized Dataframe')
+		show_boxplot_df = st.checkbox('Boxplots for BMIQ')
+		show_qn_df = st.checkbox('Quantile Normalized Dataframe')
+		show_mean_df = st.checkbox('Mean Normalized Dataframe')
+		show_minmax_df = st.checkbox('Minmax Normalized Dataframe')
 
-	logged = st.checkbox("Show Logged Data")
+
+
 
 	if st.button("Start Normalization", key="start"):
-		with tab_raw:
-			if logged:
-				plot.logged_plot()
-		with tab_norm:
-			if b_mean_norm:
-				plot.mean_normalized_plots(
-					mean_df)
-			if b_qn_norm:
-				plot.quantile_normalized_plots(qn_df)
-			if b_minmax_norm:
-				plot.min_max_normalized_plots(minmax_df)
-			if beta_plot or b_bmiq_norm:
-				plot.everything_beta(beta_df, types_df, bmiq_df, boxplot_df,
-				                     b_bmiq_norm, beta_plot)
+
+		# ORIGINAL DATA
+		df_meth, df_unmeth = plot.logged_plot()
+		user.download_df_as_csv(df_meth, 'download/log-meth.csv')
+		user.download_df_as_csv(df_unmeth, 'download/log-unmeth.csv')
+		# NORMALIZATION
+		if b_mean_norm:
+			df_meth, df_unmeth = plot.mean_normalized_plots(
+				show_mean_df)
+			user.download_df_as_csv(df_meth, 'download/meannorm-meth.csv')
+			user.download_df_as_csv(df_unmeth, 'download/meannorm-unmeth.csv')
+		if b_qn_norm:
+			df_meth, df_unmeth = plot.quantile_normalized_plots(show_qn_df)
+			user.download_df_as_csv(df_meth, 'download/qnnorm-meth.csv')
+			user.download_df_as_csv(df_unmeth, 'download/qnnorm-unmeth.csv')
+		if b_minmax_norm:
+			df_meth, df_unmeth = plot.min_max_normalized_plots(
+				show_minmax_df)
+			user.download_df_as_csv(df_meth, 'download/minmaxnorm-meth.csv')
+			user.download_df_as_csv(df_unmeth, 'download/minmaxnorm-unmeth.csv')
+		if show_beta_plot or b_bmiq_norm:
+			df = plot.everything_beta(show_beta_df, show_types_df,
+			                          show_bmiq_df,
+			                          show_boxplot_df,
+			                          b_bmiq_norm, show_beta_plot)
+			user.download_df_as_csv(df, 'download/bmiq.csv')
+

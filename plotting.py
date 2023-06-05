@@ -32,9 +32,11 @@ def logged_plot():
 	with col_right:
 		st.pyplot(
 			_density_plot(df_log_unmeth, "Logged plot - unmethylated", 5, 17))
+	return df_log_meth, df_log_unmeth
 
 
 def mean_normalized_plots(show_df):
+	st.header("Mean Normalization")
 	df_log_meth, df_log_unmeth = prep.log_data()
 	# MEAN NORMALIZED
 	col_left, col_right = st.columns(2)
@@ -61,6 +63,7 @@ def mean_normalized_plots(show_df):
 
 
 def min_max_normalized_plots(show_df):
+	st.header("Min-Max Normalization")
 	df_log_meth, df_log_unmeth = prep.log_data()
 	col_left, col_right = st.columns(2)
 	# MIN MAX NORMALIZED
@@ -82,9 +85,11 @@ def min_max_normalized_plots(show_df):
 			              -0.2, 1.25))
 		if show_df:
 			st.write(df_minmax_unmeth)
+	return df_minmax_meth, df_minmax_unmeth
 
 
 def quantile_normalized_plots(show_df):
+	st.header("Quantile Normalization")
 	df_log_meth, df_log_unmeth = prep.log_data()
 	# QUANTILE NORMALIZED
 	col_left, col_right = st.columns(2)
@@ -120,6 +125,7 @@ def quantile_normalized_plots(show_df):
 		st.pyplot(_density_plot(df_qn_unmeth,
 		                        "Quantile Normalized plot (Median) - unmethylated",
 		                        5, 17))
+	return df_qn_meth, df_qn_unmeth
 
 
 @st.cache_data
@@ -128,11 +134,14 @@ def everything_beta(beta, types, bmiq, boxplot, bmiq_norm, beta_plot):
 	df_beta = prep.beta_value(df_log_meth, df_log_unmeth, 100)
 	st.write("Beta Values (Methylation Values)")
 	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
-	print(df_beta_t1)
-	if beta_plot: #fine
+	if beta_plot:
+		st.write("Beta-Value Plots")
 		_beta_value_plots(beta, types, df_beta, df_beta_t1, df_beta_t2)
 	if bmiq_norm:
+		st.write("BMIQ Normalization")
 		_bmiq_plots(bmiq, boxplot, df_beta_t2)
+
+	return df_beta
 
 
 @st.cache_data
@@ -172,3 +181,4 @@ def bmiq_boxplots(df_beta_t2, df_bmiq):
 def plot_random_dataframe(df):
 	from st_aggrid import AgGrid
 	st.write(AgGrid(df))
+

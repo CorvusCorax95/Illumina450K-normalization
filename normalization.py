@@ -17,7 +17,6 @@ def min_max_normalization(df):
 	sample_list = df.columns.values.tolist()[2:]
 	mm_df = (df[sample_list] - df[sample_list].min()) / (
 			df[sample_list].max() - df[sample_list].min())
-
 	return mm_df
 
 

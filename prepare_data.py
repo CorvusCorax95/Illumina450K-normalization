@@ -33,6 +33,7 @@ def dataframe_log(x):
 		math.log(x, math.e)
 	return x
 
+
 def get_values_as_dataframe_w_types():
 	"""rebuild illumina probe tables to dataframe with just probes and types"""
 
@@ -111,8 +112,9 @@ def beta_value(df_log_meth, df_log_unmeth, offset):
 
 	for x in sample_list:
 		for y in probes:
-			df[x][y] = df_meth[x][y] / (df_meth[x][y] + df_unmeth[x][y] +
-			                            offset)
+			df[x][y] = (df_meth[x][y] + (offset / 2)) / (df_meth[x][y] +
+			                                             df_unmeth[x][y] +
+			                                             offset)
 	df.insert(0, "type", type_col_m)
 	return df
 
