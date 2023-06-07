@@ -25,6 +25,8 @@ def _boxplot(df, title):
 
 
 def logged_plot():
+	from streamlit_extras import chart_container
+
 	col_left, col_right = st.columns(2)
 	df_log_meth, df_log_unmeth = prep.log_data()
 	with col_left:
@@ -33,7 +35,6 @@ def logged_plot():
 		st.pyplot(
 			_density_plot(df_log_unmeth, "Logged plot - unmethylated", 5, 17))
 	return df_log_meth, df_log_unmeth
-
 
 def mean_normalized_plots(show_df):
 	st.header("Mean Normalization")
@@ -61,7 +62,6 @@ def mean_normalized_plots(show_df):
 			st.write(df_meannorm_unmeth)
 	return df_meannorm_meth, df_meannorm_unmeth
 
-
 def min_max_normalized_plots(show_df):
 	st.header("Min-Max Normalization")
 	df_log_meth, df_log_unmeth = prep.log_data()
@@ -86,7 +86,6 @@ def min_max_normalized_plots(show_df):
 		if show_df:
 			st.write(df_minmax_unmeth)
 	return df_minmax_meth, df_minmax_unmeth
-
 
 def quantile_normalized_plots(show_df):
 	st.header("Quantile Normalization")
@@ -144,7 +143,6 @@ def everything_beta(beta, types, bmiq, boxplot, bmiq_norm, beta_plot):
 	return df_beta
 
 
-@st.cache_data
 def _beta_value_plots(beta, types, df_beta, df_beta_t1, df_beta_t2):
 	col_left, col_right = st.columns(2)
 	if beta:
@@ -161,7 +159,7 @@ def _beta_value_plots(beta, types, df_beta, df_beta_t1, df_beta_t2):
 		                        0.0, 0.15))
 
 
-@st.cache_data
+
 def _bmiq_plots(bmiq, boxplot, df_beta_t2):
 	df_bmiq = norm.bmiq()
 	if bmiq:
