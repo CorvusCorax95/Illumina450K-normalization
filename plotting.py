@@ -11,7 +11,7 @@ from type import DataType
 
 def _density_plot(df, title):
 	"""Makes a density-plot from the Dataframe, a title and set boundaries
-	for the x axis"""
+	for the x axis."""
 	plt.style.use('dark_background')
 	df.plot.density(linewidth=1, figsize=(20, 10))
 	plt.legend([])
@@ -19,7 +19,7 @@ def _density_plot(df, title):
 
 
 def _boxplot(df, title):
-	"""Makes a density-plot from the Dataframe, a title and set boundaries
+	"""Makes a boxplot from the Dataframe, a title and set boundaries
 	for the x axis"""
 	plt.style.use('dark_background')
 	plt.boxplot(df)
@@ -27,12 +27,17 @@ def _boxplot(df, title):
 
 
 def _containerize_chart(df, name):
+	"""Container makes usage of streamlit-extras possible."""
 	with chart_container(df):
 		st.write(name)
 		st.pyplot(_density_plot(df, name))
+		st.write("(Mean, STD): ", prep.output_measures(df))
 
 
 def _switch(data_type, df_log_meth, df_log_unmeth):
+	"""Switch-case for differentiating between the different types of
+	normalizations without encountering too much code duplication. Uses a
+	custom enum for the type of Normalization provided (DataType)."""
 	if data_type == DataType.LOG:
 		return df_log_meth, df_log_unmeth, "Logged Plots"
 	elif data_type == DataType.MEAN:
@@ -51,6 +56,8 @@ def _switch(data_type, df_log_meth, df_log_unmeth):
 
 
 def default_plots(data_type):
+	"""Splits page into two columns to show methylated and unmethylated case
+	side-by-side."""
 	df_meth, df_unmeth = prep.log_data()
 	df_norm_meth, df_norm_unmeth, title = _switch(data_type, df_meth, df_unmeth)
 
@@ -63,6 +70,13 @@ def default_plots(data_type):
 
 
 def quantile_normalized_plots():
+	"""
+	1. Set median to be the last column (acts as default reference).
+	2. Build a selectbox to set your reference.
+	3. Make normalization.
+	TODO: Maybe build a reference dataframe?
+	TODO: reload does not work.
+	"""
 	st.header("Quantile Normalization")
 	df_log_meth, df_log_unmeth = prep.log_data()
 	# QUANTILE NORMALIZED
@@ -92,19 +106,20 @@ def quantile_normalized_plots():
 	return df_qn_meth, df_qn_unmeth
 
 
-def everything_beta(boxplot):
+def beta_mixture_quantile_normalization(boxplot):
+	"""Provides necessary dataframes and calls all corresponding methods."""
 	df_log_meth, df_log_unmeth = prep.log_data()
 	df_beta = prep.beta_value(df_log_meth, df_log_unmeth, 100)
-	st.write("Beta Values (Methylation Values)")
 	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
 
 	_beta_value_plots(df_beta, df_beta_t1, df_beta_t2, boxplot)
-	st.write("BMIQ Normalization")
 
 	return df_beta
 
 
 def _beta_value_plots(df_beta, df_beta_t1, df_beta_t2, boxplot):
+	"""Calls methods for showing the pure beta values and the normalilzed
+	beta values."""
 	_containerize_chart(df_beta, "Beta Values")
 
 	col_left, col_right = st.columns(2)
@@ -120,11 +135,8 @@ def _beta_value_plots(df_beta, df_beta_t1, df_beta_t2, boxplot):
 
 
 def _boxplots(df_beta_t2, df_bmiq):
+	# TODO: more types of evaluation plots
+	"""Builds evaliuation plots."""
 	st.pyplot(_boxplot(df_beta_t2.loc[:, df_beta_t2.columns != 'type'],
 	                   "Beta Value Boxplot"))
 	st.pyplot(_boxplot(df_bmiq, "BMIQ Normalized Boxplot"))
-
-
-def plot_random_dataframe(df):
-	from st_aggrid import AgGrid
-	st.write(AgGrid(df))

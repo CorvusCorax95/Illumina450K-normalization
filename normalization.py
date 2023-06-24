@@ -43,15 +43,6 @@ def set_states(x):
 	else:
 		return 'H'
 
-
-def likelihood(params, data):
-	return stats.norm.logpdf(data, loc=params[0], scale=params[1]).sum()
-
-
-def neglikelihood(params, data):
-	return -1 * likelihood(params, data)
-
-
 def bmiq_unmethylated(df_t2_unmethylated, unmethylated_probes,
                       mean_type2_unmethylated, df_t2_parameters,
                       df_t1_parameters):
@@ -137,7 +128,6 @@ def bmiq_hemimethylated(df_t2_hemimethylated, df_t2_unmethylated,
 	'''for type2 probes with H-state: perform a dilation (scale) 
 	transformation to "fit" the data into the "gap" with endpoints defined by
 	max(eta2U) and min(eta2M)'''
-	df = None
 	eta_2_H_list = []
 	maxH = df_t2_hemimethylated.max()
 	minH = df_t2_hemimethylated.min()
@@ -166,16 +156,12 @@ def bmiq():
 	methylation as hemimethylation even though hemimethylation
 	is most often used in the context of strand-specific methylation.
 	-> Realized with betamix (Schroeder, Rahmann)'''
-	df_meth, df_unmeth = prep.get_values_as_dataframe_w_types()
+	df_meth, df_unmeth = prep._get_values_as_dataframe_w_types()
 
 	'''Prepping for betamix'''
-	# df_beta = prep.beta_value(df_meth, df_unmeth, 100)
-	# df_beta.to_csv('df_beta.csv', sep='\t')
 	df_beta = pd.read_csv('df_beta.csv', sep='\t', index_col=0)
 	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
 	sample_list = df_beta_t2.columns.values.tolist()
-	# prep.df_to_h5(df_beta_t1, "type1_probes")
-	# prep.df_to_h5(df_beta_t2, "type2_probes")
 	'''list with all names of probes with type 2'''
 	probe_list_t2 = df_meth.loc[df_meth["type"] == "II"].index.values.tolist()
 
@@ -261,11 +247,6 @@ def bmiq():
 			                                                   mean_type2_methylated,
 			                                                   df_t2_parameters,
 			                                                   df_t1_parameters)
-			# print("----------", sample, "--------")
-			# print("n: ", n)
-			# print(len(unmethylated_probes) + len(hemimethylated_probes) + len(
-			# 	methylated_probes))
-			# print(len(eta_m_list))
 
 			df_hemimethylated_values = bmiq_hemimethylated(df_t2_hemimethylated,
 			                                               df_t2_unmethylated,
@@ -289,10 +270,4 @@ def bmiq():
 				                       index=probe_list_t2, columns=[sample])
 			else:
 				df_bmiq[sample] = normalized_values
-	# 		if (sample == "RB_E_001") or (sample == "RB_E_002"):
-	# 			print("Normalized Values")
-	# 			print(normalized_values)
-	# 			print("DF_BMIQ")
-	# 			print(df_bmiq)
-	# print(df_bmiq)
 	return df_bmiq

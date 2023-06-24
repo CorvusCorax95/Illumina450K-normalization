@@ -1,5 +1,3 @@
-import math
-
 import pandas as pd
 import numpy as np
 import h5py as h5
@@ -19,7 +17,7 @@ def _probetype_to_dataframe(input):
 	return df_i
 
 
-def add_probetypes(df_target):
+def _add_probetypes(df_target):
 	"""adding probetypes (I and II) to my dataframe	to distinguish between
 	Infinium I and Infinium II probes"""
 	df_450 = _probetype_to_dataframe('resources/illumina-table-450.csv')
@@ -28,14 +26,8 @@ def add_probetypes(df_target):
 	return df_merged
 
 
-def dataframe_log(x):
-	if (isinstance(x, int) and x != 0):
-		math.log(x, math.e)
-	return x
-
-
-def get_values_as_dataframe_w_types():
-	"""rebuild illumina probe tables to dataframe with just probes and types"""
+def _get_values_as_dataframe_w_types():
+	"""Rebuild illumina probe tables to dataframe with just probes and types"""
 
 	"""ORIGINAL FILES"""
 	# convert methylation-tables to dataframes
@@ -51,12 +43,12 @@ def get_values_as_dataframe_w_types():
 
 	"""	Matches probe types (Infinium I or Infinium II) from the df_450 file (
 	file from Illumina with	mapping of probename to probetype) """
-	df_meth_w_types = add_probetypes(df_values_meth)
-	df_unmeth_w_types = add_probetypes(df_values_unmeth)
+	df_meth_w_types = _add_probetypes(df_values_meth)
+	df_unmeth_w_types = _add_probetypes(df_values_unmeth)
 
 	"""Saves in case of problems"""
-	df_meth_w_types.to_csv('methylated_w_types.csv', sep='\t')
-	df_unmeth_w_types.to_csv('unmethylated_w_types.csv', sep='\t')
+	#df_meth_w_types.to_csv('methylated_w_types.csv', sep='\t')
+	#df_unmeth_w_types.to_csv('unmethylated_w_types.csv', sep='\t')
 
 	return df_meth_w_types, df_unmeth_w_types
 
@@ -64,21 +56,22 @@ def get_values_as_dataframe_w_types():
 # applying log to all values in the dataframe
 # stores dataframe as csv in new file
 def log_data():
-	"""Uses log on every value in the dataframe."""
-	df_meth, df_unmeth = get_values_as_dataframe_w_types()
+	"""Logs on every value in the dataframe."""
+	df_meth, df_unmeth = _get_values_as_dataframe_w_types()
 
 	# log values of dataframe
 	sample_list = df_meth.columns.values.tolist()[1:]
+
+	"""Methylated File"""
 	df_meth.replace(0, 0.01, inplace=True)
 	df_log_meth = np.log2(df_meth[sample_list])
 	# find and remove inf values after log
 	df_log_meth.replace([np.inf, -np.inf], np.nan, inplace=True)
 	df_log_meth = df_log_meth.dropna()
 
-	sample_list = df_unmeth.columns.values.tolist()[1:]
+	"""Unmethylated File"""
 	df_unmeth.replace(0, 0.01, inplace=True)
 	df_log_unmeth = np.log2(df_unmeth[sample_list])
-
 	# find and remove inf values after log
 	df_log_unmeth.replace([np.inf, -np.inf], np.nan, inplace=True)
 	df_log_unmeth = df_log_unmeth.dropna()
@@ -86,21 +79,20 @@ def log_data():
 	return df_log_meth, df_log_unmeth
 
 
-# calculates means of all samples
-def output_measures(df, title):
+def output_measures(df):
+	""""Useful output measures."""
 	sample_list = df.columns.values.tolist()[1:]
-	print("Dataframe: " + title)
 	means = []
 	for x in sample_list:
 		means.append(df[x].mean())
-	# print(x, ": ", str(df[x].mean())
-	print("Mean: ", np.average(means))
+	return np.average(means), np.std(means)
 
 
-# beta-value: methylated / methylated + unmethylated + 100
 def beta_value(df_log_meth, df_log_unmeth, offset):
-	df_meth = add_probetypes(df_log_meth)
-	df_unmeth = add_probetypes(df_log_unmeth)
+	"""Makes beta-values from logged values.
+	beta-value: methylated / methylated + unmethylated + 100"""
+	df_meth = _add_probetypes(df_log_meth)
+	df_unmeth = _add_probetypes(df_log_unmeth)
 	sample_list = df_meth.columns.values.tolist()[1:]
 	type_col_m = df_meth["type"]
 	if "type" in sample_list:
@@ -119,8 +111,8 @@ def beta_value(df_log_meth, df_log_unmeth, offset):
 	return df
 
 
-# M-value: log(methylated / unmethylated)
 def m_value(df_meth, df_unmeth):
+	"""Calculates M-Value. Different approach than beta-value."""
 	df = df_meth
 	sample_list = df_meth.columns.values.tolist()[1:]
 	probes_meth = df_meth.index.values.tolist()
@@ -134,35 +126,17 @@ def m_value(df_meth, df_unmeth):
 
 
 def split_types(df):
+	"""BMIQ Normalization needs separate dataframes per type so this is the
+	function that splits them."""
 	df_t1 = df.loc[df["type"] == 'I']
 	df_t2 = df.loc[df["type"] == 'II']
 	del df_t1[df_t1.columns[0]]
 	del df_t2[df_t2.columns[0]]
 	return df_t1, df_t2
 
-
-def df_to_h5(df, filename):
-	df_t1, df_t2 = split_types(df)
-	# delete existing file first by hand!
-	sample_list = df.columns.values.tolist()[1:]
-	df.reset_index(drop=True)
-	filename = filename + ".h5"
-	hf = h5.File(filename, "w")
-	group = hf.create_group("data")
-	i = 0
-	for sample in sample_list:
-		array = np.array(df[sample], dtype=np.float64)
-		dset = group.create_dataset(str(i), data=np.sort(array))
-		i = i + 1
-	hf.close()
-
-
-# betamix commands
-# python estimate.py -F -t 1E-5 mytestfile.h5 --resultpath mytestfile-est.h5
-# python evaluate.py -F -i snps -f pdf mytestfile.h5 mytestfile-est.h5 mytestfile-eval.h5
-
 def get_parameters(path, n):
-	'''gets the parameter out of the hdf5 file'''
+	'''After using the betamix-tool we need to get the esimated parameters
+	from the h5 file provided.'''
 	num = str(n)
 	f = h5.File(path, "r")
 	grp = f['estimation']
@@ -181,13 +155,3 @@ def get_classes(path, probe_list, n):
 	subsubgrp = subgrp['mix']
 	data = subsubgrp['classes']
 	return pd.DataFrame(data, index=probe_list, columns=["sample"])
-
-
-def get_weights(path, probe_list):
-	# TODO: BROKEN
-	'''gets the parameter out of the hdf5 file'''
-	f = h5.File(path, "r")
-	grp = f['estimation']
-	subgrp = grp["0"]
-	data = subgrp["w"]
-	return pd.DataFrame(data, index=probe_list, columns=["U", "H", "M"])

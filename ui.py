@@ -4,6 +4,9 @@ import streamlit as st
 
 import plotting as plot
 import user
+
+import basics
+
 from streamlit_extras.dataframe_explorer import dataframe_explorer
 from streamlit_extras.chart_container import chart_container
 
@@ -54,6 +57,7 @@ def make_header():
 
 
 def make_plots():
+
 	"""Cares about all the plots and Dataframe-Views"""
 	with st.sidebar:
 		b_download = st.checkbox("Do you want the possibility to download "
@@ -88,7 +92,7 @@ def make_plots():
 				user.convert_df(df_meth, 'download/qnnorm-meth.csv')
 				user.convert_df(df_unmeth, 'download/qnnorm-unmeth.csv')
 			if b_bmiq_norm:
-				df = plot.everything_beta(show_boxplot_df)
+				df = plot.beta_mixture_quantile_normalization(show_boxplot_df)
 				user.convert_df(df, 'download/bmiq.csv')
 
 		st.success("Normalization completed!")

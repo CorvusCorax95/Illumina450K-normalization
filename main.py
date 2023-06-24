@@ -2,12 +2,15 @@ import ui
 import os
 import shutil
 
+
 # MAIN CLASS
 ## We just call the UI functions to build out streamlit app and prepare
 # everything
 download_dir = "download"
 old_zip = "compressed_download.zip"
 
+
+# remove
 if os.path.exists(old_zip):
 	os.remove(old_zip)
 
