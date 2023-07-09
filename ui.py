@@ -5,8 +5,6 @@ import streamlit as st
 import plotting as plot
 import user
 
-import basics
-
 from streamlit_extras.dataframe_explorer import dataframe_explorer
 from streamlit_extras.chart_container import chart_container
 
@@ -77,6 +75,8 @@ def make_plots():
 			df_meth, df_unmeth = plot.default_plots(DataType.LOG)
 			user.convert_df(df_meth, 'download/log-meth.csv')
 			user.convert_df(df_unmeth, 'download/log-unmeth.csv')
+
+			df_beta = plot.beta_value()
 
 			# NORMALIZATION
 			if b_mean_norm:

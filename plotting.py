@@ -105,11 +105,14 @@ def quantile_normalized_plots():
 
 	return df_qn_meth, df_qn_unmeth
 
+def beta_value():
+	df_log_meth, df_log_unmeth = prep.log_data()
+	df_beta = prep.beta_value(df_log_meth, df_log_unmeth, 100)
+	return df_beta
 
 def beta_mixture_quantile_normalization(boxplot):
 	"""Provides necessary dataframes and calls all corresponding methods."""
-	df_log_meth, df_log_unmeth = prep.log_data()
-	df_beta = prep.beta_value(df_log_meth, df_log_unmeth, 100)
+	df_beta = beta_value()
 	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
 
 	_beta_value_plots(df_beta, df_beta_t1, df_beta_t2, boxplot)

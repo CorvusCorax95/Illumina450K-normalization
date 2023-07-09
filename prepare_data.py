@@ -17,10 +17,11 @@ def _probetype_to_dataframe(input):
 	return df_i
 
 
+
 def _add_probetypes(df_target):
 	"""adding probetypes (I and II) to my dataframe	to distinguish between
 	Infinium I and Infinium II probes"""
-	df_450 = _probetype_to_dataframe('resources/illumina-table-450.csv')
+	df_450 = _probetype_to_dataframe('illumina-table-450.csv')
 	df_merged = pd.merge(df_450, df_target, on="probe")
 
 	return df_merged
@@ -31,15 +32,16 @@ def _get_values_as_dataframe_w_types():
 
 	"""ORIGINAL FILES"""
 	# convert methylation-tables to dataframes
-	# df_values_meth = pd.read_csv('data/methylation_meth.wide.tsv', sep='\t')
-	# df_values_unmeth = pd.read_csv('data/methylation_unmeth.wide.tsv',
-	# sep='\t')
+	#df_values_meth = pd.read_csv('data/methylation_meth.wide.tsv',
+	#                             sep='\t').set_index('probe')
+	#df_values_unmeth = pd.read_csv('data/methylation_unmeth.wide.tsv',
+	#sep='\t').set_index('probe')
 
 	# """SHORT FILES"""
-	df_values_meth = pd.read_csv('data/short_meth.tsv', sep='\t').set_index(
+	df_values_meth = pd.read_csv('short_meth.tsv', sep='\t').set_index(
 		'probe')
-	df_values_unmeth = pd.read_csv('data/short_unmeth.tsv', sep='\t').set_index(
-		'probe')
+	df_values_unmeth = pd.read_csv('short_unmeth.tsv',
+	                               sep='\t').set_index('probe')
 
 	"""	Matches probe types (Infinium I or Infinium II) from the df_450 file (
 	file from Illumina with	mapping of probename to probetype) """
@@ -47,9 +49,8 @@ def _get_values_as_dataframe_w_types():
 	df_unmeth_w_types = _add_probetypes(df_values_unmeth)
 
 	"""Saves in case of problems"""
-	#df_meth_w_types.to_csv('methylated_w_types.csv', sep='\t')
-	#df_unmeth_w_types.to_csv('unmethylated_w_types.csv', sep='\t')
-
+	# df_meth_w_types.to_csv('methylated_w_types.csv', sep='\t')
+	# df_unmeth_w_types.to_csv('unmethylated_w_types.csv', sep='\t')
 	return df_meth_w_types, df_unmeth_w_types
 
 
@@ -75,9 +76,29 @@ def log_data():
 	# find and remove inf values after log
 	df_log_unmeth.replace([np.inf, -np.inf], np.nan, inplace=True)
 	df_log_unmeth = df_log_unmeth.dropna()
-
 	return df_log_meth, df_log_unmeth
 
+def log_data_wo_types():
+	"""Logs on every value in the dataframe."""
+	df_meth, df_unmeth = _get_values_as_dataframe_w_types()
+
+	# log values of dataframe
+	sample_list = df_meth.columns.values.tolist()[1:]
+
+	"""Methylated File"""
+	df_meth.replace(0, 0.01, inplace=True)
+	df_log_meth = np.log2(df_meth[sample_list])
+	# find and remove inf values after log
+	df_log_meth.replace([np.inf, -np.inf], np.nan, inplace=True)
+	df_log_meth = df_log_meth.dropna()
+
+	"""Unmethylated File"""
+	df_unmeth.replace(0, 0.01, inplace=True)
+	df_log_unmeth = np.log2(df_unmeth[sample_list])
+	# find and remove inf values after log
+	df_log_unmeth.replace([np.inf, -np.inf], np.nan, inplace=True)
+	df_log_unmeth = df_log_unmeth.dropna()
+	return df_log_meth, df_log_unmeth
 
 def output_measures(df):
 	""""Useful output measures."""
@@ -133,6 +154,7 @@ def split_types(df):
 	del df_t1[df_t1.columns[0]]
 	del df_t2[df_t2.columns[0]]
 	return df_t1, df_t2
+
 
 def get_parameters(path, n):
 	'''After using the betamix-tool we need to get the esimated parameters
