@@ -56,17 +56,15 @@ def make_header():
 def make_page():
 	with st.sidebar:
 		with st.form("sidebar"):
-			b_download = st.checkbox("Do you want the possibility to download "
-			                         "everything at once? Clicking the provided "
-			                         "button will reload the site entirely.")
+			b_download = st.checkbox("Download everything at once")
 			st.write("What normalizations do you want to see?")
 			b_mean = st.checkbox('Mean Normalization')
 			b_qn = st.checkbox('Quantile Normalization')
 			b_minmax = st.checkbox('Min-Max Normalization')
 			b_bmiq = st.checkbox('Beta-Mixture-Quantile Normalization')
-			b_qn_bmiq = st.checkbox('Quantile Normalization + '
-			                        'Beta-Mixture-Quantile Normalization')
-			st.info('Decide here if you want to see the Additional Info.')
+			#b_qn_bmiq = st.checkbox('Quantile Normalization + '
+			#                        'Beta-Mixture-Quantile Normalization')
+			st.info('Additional Info.')
 			show_types = st.checkbox('Additional view split by types')
 			show_boxplot = st.checkbox('Boxplots for BMIQ')
 
@@ -74,7 +72,7 @@ def make_page():
 
 	df_beta = plot.beta_value()
 	if submitted:
-		make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, b_qn_bmiq,
+		make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, #b_qn_bmiq,
 		           show_types, show_boxplot)
 
 	if b_download:
@@ -90,7 +88,7 @@ def make_page():
 				help="When this button is clicked, the site will reload.")
 
 
-def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, b_qn_bmiq, show_types,
+def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, show_types,
                show_boxplot):
 	"""Cares about all the plots and Dataframe-Views"""
 

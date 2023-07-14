@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
 import mpld3
+import pandas as pd
 import streamlit.components.v1 as components
+import seaborn as sns
+
+import altair as alt
 
 import streamlit as st
 
@@ -17,7 +21,7 @@ def _density_plot(df, title):
 	"""Makes a density-plot from the Dataframe, a title and set boundaries
 	for the x axis."""
 	plt.style.use('dark_background')
-	df.plot.density(linewidth=1, figsize=(20, 10))
+	df.plot.kde(linewidth=1, figsize=(20, 10))
 	plt.title(title)
 	plt.legend(loc="upper right", ncols=2)
 	plt.grid(True)
@@ -30,6 +34,7 @@ def _boxplot(df, title):
 	plt.boxplot(df)
 	plt.title(title)
 	plt.grid(True)
+
 
 
 # can take dataframes with type column
