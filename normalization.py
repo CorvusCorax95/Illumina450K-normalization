@@ -2,28 +2,38 @@ import numpy as np
 import pandas as pd
 import qnorm as qn
 import scipy.stats as stats
+import streamlit
 
 import prepare_data as prep
 
 
+@streamlit.cache_data
 def mean_normalization(df):
-	#sample_list = df.columns.values.tolist()[2:]
-	sample_list = df.columns.values.tolist()[1:]
+	sample_list = df.columns.values.tolist()
 	norm_df = (df[sample_list] - df[sample_list].mean()) / df[sample_list].std()
 
 	return norm_df
 
 
+@streamlit.cache_data
 def min_max_normalization(df):
-	sample_list = df.columns.values.tolist()[1:]
+	sample_list = df.columns.values.tolist()
 	mm_df = (df[sample_list] - df[sample_list].min()) / (
 			df[sample_list].max() - df[sample_list].min())
 	return mm_df
 
 
-def quantile_normaliziation(df, reference):
-	df_qn = qn.quantile_normalize(df, target=df[reference])
+# QN muss auf intensities durchgeführt werden
+@streamlit.cache_data
+def quantile_normalization(reference):
+	df_meth, df_unmeth = prep.get_dataframe(False)
 
+	df_meth['Median'] = df_meth.median(axis=1)
+	df_unmeth['Median'] = df_unmeth.median(axis=1)
+
+	df_qn_meth = qn.quantile_normalize(df_meth, target=df_meth[reference])
+	df_qn_unmeth = qn.quantile_normalize(df_unmeth, target=df_unmeth[reference])
+	df_qn = prep.beta_value(df_qn_meth, df_qn_unmeth, 100)
 	return df_qn
 
 
@@ -44,6 +54,8 @@ def set_states(x):
 	else:
 		return 'H'
 
+
+@streamlit.cache_data
 def bmiq_unmethylated(df_t2_unmethylated, unmethylated_probes,
                       mean_type2_unmethylated, df_t2_parameters,
                       df_t1_parameters):
@@ -81,6 +93,7 @@ def bmiq_unmethylated(df_t2_unmethylated, unmethylated_probes,
 	return df, q_u_list
 
 
+@streamlit.cache_data
 def bmiq_methylated(df_t2_methylated, methylated_probes, mean_type2_methylated,
                     df_t2_parameters, df_t1_parameters):
 	'''STEP 3'''
@@ -122,6 +135,7 @@ def bmiq_methylated(df_t2_methylated, methylated_probes, mean_type2_methylated,
 	return df, q_m_list
 
 
+@streamlit.cache_data
 def bmiq_hemimethylated(df_t2_hemimethylated, df_t2_unmethylated,
                         df_t2_methylated, eta_u_list,
                         eta_m_list, hemimethylated_probes):
@@ -149,7 +163,8 @@ def bmiq_hemimethylated(df_t2_hemimethylated, df_t2_unmethylated,
 	return df
 
 
-def bmiq():
+@streamlit.cache_data
+def bmiq(df_beta):
 	'''STEP 1'''
 	'''Fitting of a three-state (unmethylated-U, hemimethylated-H, fully
 	methylated-M) beta mixture model to the type1 and type2 probes
@@ -157,14 +172,11 @@ def bmiq():
 	methylation as hemimethylation even though hemimethylation
 	is most often used in the context of strand-specific methylation.
 	-> Realized with betamix (Schroeder, Rahmann)'''
-	df_meth, df_unmeth = prep._get_values_as_dataframe_w_types()
-
-	'''Prepping for betamix'''
-	df_beta = pd.read_csv('df_beta.csv', sep='\t', index_col=0)
 	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
-	sample_list = df_beta_t2.columns.values.tolist()
+
 	'''list with all names of probes with type 2'''
-	probe_list_t2 = df_meth.loc[df_meth["type"] == "II"].index.values.tolist()
+	sample_list = df_beta.columns.values.tolist()[1:]
+	probe_list_t2 = df_beta.loc[df_beta["type"] == "II"].index.values.tolist()
 
 	'''dataframe with all classes to all samples and type 2 probes'''
 	df_classes_t2 = None
@@ -219,12 +231,14 @@ def bmiq():
 		mean_type2_methylated = df_t2_parameters['a']['M'] / (df_t2_parameters[
 			                                                      'a']['M'] +
 		                                                      df_t2_parameters[
+
 			                                                      'b']['M'])
-		mean_type2_hemimethylated = df_t2_parameters['a']['H'] / (
-				df_t2_parameters[
-					'a']['H'] +
-				df_t2_parameters[
-					'b']['H'])
+		# not needed
+		# mean_type2_hemimethylated = df_t2_parameters['a']['H'] / (
+		# 		df_t2_parameters[
+		# 			'a']['H'] +
+		# 		df_t2_parameters[
+		# 			'b']['H'])
 
 		'''list with bmiq-normalized, unmethylated values of type 2 probes
 		order equal to unmethylated_probes'''

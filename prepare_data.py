@@ -17,48 +17,54 @@ def _probetype_to_dataframe(input):
 	return df_i
 
 
-
-def _add_probetypes(df_target):
+def add_probetypes(df_target):
 	"""adding probetypes (I and II) to my dataframe	to distinguish between
 	Infinium I and Infinium II probes"""
+	# df_450 = _probetype_to_dataframe('resources/illumina-table-450.csv')
 	df_450 = _probetype_to_dataframe('illumina-table-450.csv')
+	df_target.index.name = 'probe'
 	df_merged = pd.merge(df_450, df_target, on="probe")
 
 	return df_merged
 
 
-def _get_values_as_dataframe_w_types():
+def get_dataframe(with_types):
 	"""Rebuild illumina probe tables to dataframe with just probes and types"""
 
 	"""ORIGINAL FILES"""
 	# convert methylation-tables to dataframes
-	#df_values_meth = pd.read_csv('data/methylation_meth.wide.tsv',
+	# df_values_meth = pd.read_csv('data/methylation_meth.wide.tsv',
 	#                             sep='\t').set_index('probe')
-	#df_values_unmeth = pd.read_csv('data/methylation_unmeth.wide.tsv',
-	#sep='\t').set_index('probe')
+	# df_values_unmeth = pd.read_csv('data/methylation_unmeth.wide.tsv',
+	# sep='\t').set_index('probe')
 
-	# """SHORT FILES"""
-	df_values_meth = pd.read_csv('short_meth.tsv', sep='\t').set_index(
-		'probe')
-	df_values_unmeth = pd.read_csv('short_unmeth.tsv',
-	                               sep='\t').set_index('probe')
+	# # """SHORT FILES"""
+	# df_values_meth = pd.read_csv('data/short_meth.tsv', sep='\t').set_index(
+	# 	'probe')
+	# df_values_unmeth = pd.read_csv('data/short_unmeth.tsv',
+	#                                sep='\t').set_index('probe')
+
+	# """SHORT FILES""" needed for thesis plots
+	df_meth = pd.read_csv('short_meth.tsv', sep='\t').set_index('probe')
+	df_unmeth = pd.read_csv('short_unmeth.tsv', sep='\t').set_index('probe')
 
 	"""	Matches probe types (Infinium I or Infinium II) from the df_450 file (
 	file from Illumina with	mapping of probename to probetype) """
-	df_meth_w_types = _add_probetypes(df_values_meth)
-	df_unmeth_w_types = _add_probetypes(df_values_unmeth)
+	if with_types:
+		df_meth = add_probetypes(df_meth)
+		df_unmeth = add_probetypes(df_unmeth)
 
 	"""Saves in case of problems"""
 	# df_meth_w_types.to_csv('methylated_w_types.csv', sep='\t')
 	# df_unmeth_w_types.to_csv('unmethylated_w_types.csv', sep='\t')
-	return df_meth_w_types, df_unmeth_w_types
+	return df_meth, df_unmeth
 
 
 # applying log to all values in the dataframe
 # stores dataframe as csv in new file
 def log_data():
 	"""Logs on every value in the dataframe."""
-	df_meth, df_unmeth = _get_values_as_dataframe_w_types()
+	df_meth, df_unmeth = get_dataframe(True)
 
 	# log values of dataframe
 	sample_list = df_meth.columns.values.tolist()[1:]
@@ -78,27 +84,6 @@ def log_data():
 	df_log_unmeth = df_log_unmeth.dropna()
 	return df_log_meth, df_log_unmeth
 
-def log_data_wo_types():
-	"""Logs on every value in the dataframe."""
-	df_meth, df_unmeth = _get_values_as_dataframe_w_types()
-
-	# log values of dataframe
-	sample_list = df_meth.columns.values.tolist()[1:]
-
-	"""Methylated File"""
-	df_meth.replace(0, 0.01, inplace=True)
-	df_log_meth = np.log2(df_meth[sample_list])
-	# find and remove inf values after log
-	df_log_meth.replace([np.inf, -np.inf], np.nan, inplace=True)
-	df_log_meth = df_log_meth.dropna()
-
-	"""Unmethylated File"""
-	df_unmeth.replace(0, 0.01, inplace=True)
-	df_log_unmeth = np.log2(df_unmeth[sample_list])
-	# find and remove inf values after log
-	df_log_unmeth.replace([np.inf, -np.inf], np.nan, inplace=True)
-	df_log_unmeth = df_log_unmeth.dropna()
-	return df_log_meth, df_log_unmeth
 
 def output_measures(df):
 	""""Useful output measures."""
@@ -109,26 +94,19 @@ def output_measures(df):
 	return np.average(means), np.std(means)
 
 
-def beta_value(df_log_meth, df_log_unmeth, offset):
+def beta_value(df_meth, df_unmeth, offset):
 	"""Makes beta-values from logged values.
 	beta-value: methylated / methylated + unmethylated + 100"""
-	df_meth = _add_probetypes(df_log_meth)
-	df_unmeth = _add_probetypes(df_log_unmeth)
-	sample_list = df_meth.columns.values.tolist()[1:]
-	type_col_m = df_meth["type"]
-	if "type" in sample_list:
-		del df_meth["type"]
-		del df_unmeth["type"]
-		print("Type Column deleted")
-	probes = df_meth.index.values.tolist()
-	df = pd.DataFrame(index=probes, columns=sample_list)
 
-	for x in sample_list:
-		for y in probes:
-			df[x][y] = (df_meth[x][y] + (offset / 2)) / (df_meth[x][y] +
-			                                             df_unmeth[x][y] +
-			                                             offset)
-	df.insert(0, "type", type_col_m)
+	sample_list = df_meth.columns.values.tolist()[1:]
+	probe_list = df_meth.index.values.tolist()
+	df = pd.DataFrame(index=probe_list, columns=sample_list)
+
+	for sample in sample_list:
+		for probe in probe_list:
+			df[sample][probe] = (df_meth[sample][probe] + (offset / 2)) / (
+					df_meth[sample][probe] + df_unmeth[sample][
+				probe] + offset)
 	return df
 
 

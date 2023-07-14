@@ -1,21 +1,26 @@
 import matplotlib.pyplot as plt
+import mpld3
+import streamlit.components.v1 as components
 
 import streamlit as st
 
 from streamlit_extras.chart_container import chart_container
+from multipledispatch import dispatch
 
 import normalization as norm
 import prepare_data as prep
 from type import DataType
 
 
+# can take dataframes with type column
 def _density_plot(df, title):
 	"""Makes a density-plot from the Dataframe, a title and set boundaries
 	for the x axis."""
 	plt.style.use('dark_background')
 	df.plot.density(linewidth=1, figsize=(20, 10))
-	plt.legend([])
 	plt.title(title)
+	plt.legend(loc="upper right", ncols=2)
+	plt.grid(True)
 
 
 def _boxplot(df, title):
@@ -24,9 +29,11 @@ def _boxplot(df, title):
 	plt.style.use('dark_background')
 	plt.boxplot(df)
 	plt.title(title)
+	plt.grid(True)
 
 
-def _containerize_chart(df, name):
+# can take dataframes with type column
+def containerize_chart(df, name):
 	"""Container makes usage of streamlit-extras possible."""
 	with chart_container(df):
 		st.write(name)
@@ -34,39 +41,49 @@ def _containerize_chart(df, name):
 		st.write("(Mean, STD): ", prep.output_measures(df))
 
 
-def _switch(data_type, df_log_meth, df_log_unmeth):
+def _switch(data_type, df_beta):
 	"""Switch-case for differentiating between the different types of
 	normalizations without encountering too much code duplication. Uses a
 	custom enum for the type of Normalization provided (DataType)."""
-	if data_type == DataType.LOG:
-		return df_log_meth, df_log_unmeth, "Logged Plots"
+	if data_type == DataType.BETA:
+		return df_beta
 	elif data_type == DataType.MEAN:
-		df_norm_meth = norm.mean_normalization(df_log_meth)
-		df_norm_unmeth = norm.mean_normalization(df_log_unmeth)
+		df_beta_norm = norm.mean_normalization(df_beta)
 		title = "Mean Normalization"
 	elif data_type == DataType.MINMAX:
-		df_norm_meth = norm.min_max_normalization(df_log_meth)
-		df_norm_unmeth = norm.min_max_normalization(df_log_unmeth)
+		df_beta_norm = norm.min_max_normalization(df_beta)
 		title = "Min-Max Normalization"
 	elif data_type == DataType.QN:
-		df_norm_meth = norm.quantile_normaliziation(df_log_meth)
-		df_norm_unmeth = norm.quantile_normaliziation(df_log_unmeth)
+		df_beta_norm = norm.quantile_normalization('Median')
 		title = "Quantile Normalization"
-	return df_norm_meth, df_norm_unmeth, title
+	return df_beta_norm, title
 
 
-def default_plots(data_type):
+# return df to save as csv
+@dispatch(DataType, object)
+def default_plots(data_type, df_beta):
 	"""Splits page into two columns to show methylated and unmethylated case
 	side-by-side."""
-	df_meth, df_unmeth = prep.log_data()
-	df_norm_meth, df_norm_unmeth, title = _switch(data_type, df_meth, df_unmeth)
+
+	df_beta_norm, title = _switch(data_type, df_beta)
+	col_left, col_right = st.columns(2)
+	with col_left:
+		containerize_chart(df_beta, "Raw Beta Values")
+	with col_right:
+		containerize_chart(df_beta_norm, title)
+	return df_beta_norm
+
+
+@dispatch(object, object, str)
+def default_plots(df_t1, df_t2, title):
+	"""Splits page into two columns to show methylated and unmethylated case
+	side-by-side."""
 
 	col_left, col_right = st.columns(2)
 	with col_left:
-		_containerize_chart(df_norm_meth, str(title + " - methylated"))
+		containerize_chart(df_t1, str(title + " Type 1 Probes"))
 	with col_right:
-		_containerize_chart(df_norm_unmeth, str(title + " - unmethylated"))
-	return df_norm_meth, df_norm_unmeth
+		containerize_chart(df_t2, str(title + " Type 2 Probes"))
 
 
 def quantile_normalized_plots():
@@ -87,8 +104,8 @@ def quantile_normalized_plots():
 		reference_meth = st.selectbox('Which reference do you want to use?',
 		                              reference_options,
 		                              (len(reference_options) - 1), key=0)
-		df_qn_meth = norm.quantile_normaliziation(df_log_meth, reference_meth)
-		_containerize_chart(df_qn_meth, "Quantile Normalized plot - methylated")
+		df_qn_meth = norm.quantile_normalization(df_log_meth, reference_meth)
+		containerize_chart(df_qn_meth, "Quantile Normalized plot - methylated")
 	with col_right:
 		## QUANTILE NORMALIZED
 		# last column as Median column
@@ -98,48 +115,32 @@ def quantile_normalized_plots():
 		                                reference_options,
 		                                (len(reference_options) - 1),
 		                                key="reference")
-		df_qn_unmeth = norm.quantile_normaliziation(df_log_unmeth,
-		                                            reference_unmeth)
-		_containerize_chart(df_qn_meth, "Quantile Normalized plot - "
-		                                "unmethylated")
+		df_qn_unmeth = norm.quantile_normalization(df_log_unmeth,
+		                                           reference_unmeth)
+		containerize_chart(df_qn_meth, "Quantile Normalized plot - "
+		                               "unmethylated")
 
 	return df_qn_meth, df_qn_unmeth
 
+
+@st.cache_data
 def beta_value():
-	df_log_meth, df_log_unmeth = prep.log_data()
-	df_beta = prep.beta_value(df_log_meth, df_log_unmeth, 100)
+	df_meth, df_unmeth = prep.get_dataframe(True)
+	df_beta = prep.beta_value(df_meth, df_unmeth, 100)
 	return df_beta
 
-def beta_mixture_quantile_normalization(boxplot):
+
+def bmiq_plot(show_boxplot, df):
 	"""Provides necessary dataframes and calls all corresponding methods."""
-	df_beta = beta_value()
-	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
-
-	_beta_value_plots(df_beta, df_beta_t1, df_beta_t2, boxplot)
-
-	return df_beta
-
-
-def _beta_value_plots(df_beta, df_beta_t1, df_beta_t2, boxplot):
-	"""Calls methods for showing the pure beta values and the normalilzed
-	beta values."""
-	_containerize_chart(df_beta, "Beta Values")
-
-	col_left, col_right = st.columns(2)
-	with col_left:
-		_containerize_chart(df_beta_t1, "Beta Values Type 1")
-	with col_right:
-		_containerize_chart(df_beta_t2, "Beta Values Type 2")
-
-	df_bmiq = norm.bmiq()
-	_containerize_chart(df_bmiq, "BMIQ Values")
-	if boxplot:
-		_boxplots(df_beta_t2, df_bmiq)
+	df_beta = prep.add_probetypes(df)
+	print('here')
+	df_bmiq = norm.bmiq(df_beta)
+	containerize_chart(df_bmiq, "BMIQ Values")
+	if show_boxplot:
+		_boxplots(df_bmiq)
+	return df_bmiq
 
 
-def _boxplots(df_beta_t2, df_bmiq):
-	# TODO: more types of evaluation plots
+def _boxplots(df_bmiq):
 	"""Builds evaliuation plots."""
-	st.pyplot(_boxplot(df_beta_t2.loc[:, df_beta_t2.columns != 'type'],
-	                   "Beta Value Boxplot"))
 	st.pyplot(_boxplot(df_bmiq, "BMIQ Normalized Boxplot"))

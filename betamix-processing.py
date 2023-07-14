@@ -56,7 +56,7 @@ def bmiq():
 	methylation as hemimethylation even though hemimethylation
 	is most often used in the context of strand-specific methylation.
 	-> Realized with betamix (Schroeder, Rahmann)'''
-	df_meth, df_unmeth = prep._get_values_as_dataframe_w_types()
+	df_meth, df_unmeth = prep.get_dataframe(True)
 
 	'''Prepping for betamix'''
 	df_beta = prep.beta_value(df_meth, df_unmeth, 100)

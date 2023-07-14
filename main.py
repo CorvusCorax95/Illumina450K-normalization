@@ -25,5 +25,5 @@ else:
 
 
 ui.make_header()
-ui.make_plots()
+ui.make_page()
 
