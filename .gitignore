@@ -2,5 +2,6 @@ __pycache__/
 .ipynb_checkpoints/
 .idea/
 .betamix-results/
+.download/
 data/methylation_meth.wide.tsv
 data/methylation_unmeth.wide.tsv

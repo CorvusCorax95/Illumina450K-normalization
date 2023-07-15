@@ -27,16 +27,6 @@ def _density_plot(df, title):
 	plt.grid(True)
 
 
-def _boxplot(df, title):
-	"""Makes a boxplot from the Dataframe, a title and set boundaries
-	for the x axis"""
-	plt.style.use('dark_background')
-	plt.boxplot(df)
-	plt.title(title)
-	plt.grid(True)
-
-
-
 # can take dataframes with type column
 def containerize_chart(df, name):
 	"""Container makes usage of streamlit-extras possible."""
@@ -59,7 +49,8 @@ def _switch(data_type, df_beta):
 		df_beta_norm = norm.min_max_normalization(df_beta)
 		title = "Min-Max Normalization"
 	elif data_type == DataType.QN:
-		df_beta_norm = norm.quantile_normalization('Median')
+		sample_list = df_beta.columns.values.tolist()
+		df_beta_norm = norm.quantile_normalization(sample_list, 'Median')
 		title = "Quantile Normalization"
 	return df_beta_norm, title
 
@@ -96,8 +87,6 @@ def quantile_normalized_plots():
 	1. Set median to be the last column (acts as default reference).
 	2. Build a selectbox to set your reference.
 	3. Make normalization.
-	TODO: Maybe build a reference dataframe?
-	TODO: reload does not work.
 	"""
 	st.header("Quantile Normalization")
 	df_log_meth, df_log_unmeth = prep.log_data()
@@ -135,17 +124,28 @@ def beta_value():
 	return df_beta
 
 
-def bmiq_plot(show_boxplot, df):
+def bmiq_plot(df):
 	"""Provides necessary dataframes and calls all corresponding methods."""
 	df_beta = prep.add_probetypes(df)
-	print('here')
 	df_bmiq = norm.bmiq(df_beta)
 	containerize_chart(df_bmiq, "BMIQ Values")
-	if show_boxplot:
-		_boxplots(df_bmiq)
 	return df_bmiq
 
 
-def _boxplots(df_bmiq):
-	"""Builds evaliuation plots."""
-	st.pyplot(_boxplot(df_bmiq, "BMIQ Normalized Boxplot"))
+def boxplots(df):
+	"""Builds evaluation plots."""
+	columns = df.columns.values.tolist()
+	with chart_container(df[columns]):
+		st.write("Boxplot")
+		st.pyplot(
+			_boxplot_df(df[columns], "Normalized Boxplot"))
+
+
+def _boxplot_df(df, title):
+	"""Makes a boxplot from the Dataframe, a title and set boundaries
+	for the x axis"""
+	labels = df.columns.values.tolist()
+	plt.style.use('dark_background')
+	plt.boxplot(df, labels=labels)
+	plt.title(title)
+	plt.grid(True)

@@ -66,11 +66,13 @@ def make_page():
 			#                        'Beta-Mixture-Quantile Normalization')
 			st.info('Additional Info.')
 			show_types = st.checkbox('Additional view split by types')
-			show_boxplot = st.checkbox('Boxplots for BMIQ')
+			show_boxplot = st.checkbox('Additional boxplots for normalizations')
 
 			submitted = st.form_submit_button("Run Normalization")
-
 	df_beta = plot.beta_value()
+	options = st.multiselect('Select Samples.', df_beta.columns.values.tolist())
+	st.write(df_beta[options])
+	df_beta = df_beta[options]
 	if submitted:
 		make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, #b_qn_bmiq,
 		           show_types, show_boxplot)
@@ -100,6 +102,8 @@ def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, show_types,
 		user.convert_df(df_beta_w_types, 'download/raw-beta-values_w_types.csv')
 		df_beta_t1, df_beta_t2 = prep.split_types(df_beta_w_types)
 		plot.default_plots(df_beta_t1, df_beta_t2, "Beta Values")
+		if show_boxplot:
+			plot.boxplots(df_beta_t1)
 
 	with st.spinner("Wait for Normalization..."):
 		if b_mean:
@@ -110,11 +114,15 @@ def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, show_types,
 				df_mean_w_types = prep.add_probetypes(df_mean)
 				df_mean_t1, df_mean_t2 = prep.split_types(df_mean_w_types)
 				plot.default_plots(df_mean_t1, df_mean_t2, "Mean Normalized")
+			if show_boxplot:
+				plot.boxplots(df_mean)
 	with st.spinner("Wait for Normalization..."):
 		if b_minmax:
 			st.subheader("Minmax Normalization")
 			df_minmax = plot.default_plots(DataType.MINMAX, df_beta)
 			user.convert_df(df_minmax, 'download/minmaxnorm.csv')
+			if show_boxplot:
+				plot.boxplots(df_minmax)
 			if show_types:
 				df_minmax_w_types = prep.add_probetypes(df_minmax)
 				df_minmax_t1, df_minmax_t2 = prep.split_types(df_minmax_w_types)
@@ -125,6 +133,8 @@ def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, show_types,
 			st.subheader("Quantile Normalization")
 			df_qn = plot.default_plots(DataType.QN, df_beta)
 			user.convert_df(df_qn, 'download/qnorm.csv')
+			if show_boxplot:
+				plot.boxplots(df_qn)
 			if show_types:
 				df_qn_w_types = prep.add_probetypes(df_qn)
 				df_qn_t1, df_qn_t2 = prep.split_types(df_qn_w_types)
@@ -132,5 +142,7 @@ def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, show_types,
 	with st.spinner("Wait for Normalization..."):
 		if b_bmiq:
 			st.subheader("BMIQ Normalization")
-			df = plot.bmiq_plot(show_boxplot, df_beta)
-			user.convert_df(df, 'download/bmiq.csv')
+			df_bmiq = plot.bmiq_plot(df_beta)
+			user.convert_df(df_bmiq, 'download/bmiq.csv')
+			if show_boxplot:
+				plot.boxplots(df_bmiq)

@@ -43,7 +43,7 @@ light_red = (1, 0.682, 0.643, 1)  # Type 2 Unmethylated
 dark_red = (0.541, 0.043, 0, 1)  # Type 2 Unmethylated
 hex_red = "#8a0b00"
 
-fig_log_densities, ax = plt.subplots(2, 3)
+fig_log_densities, ax = plt.subplots(2, 2)
 fig_log_densities.suptitle("logarithmic density functions")
 
 ax[0, 0].set_title("A) Methylated density plots", loc='left')
@@ -52,15 +52,10 @@ ax[0, 0].set_xlabel("log(2)-brightness")
 ax[1, 0].set_title("B) Unmethylated density plots", loc='left')
 ax[1, 0].set_xlabel("log(2)-brightness")
 
-ax[0, 1].set_title("C) Type 1 density plots", loc='left')
-ax[0, 1].set_xlabel("log(2)-brightness")
+ax[0, 1].set_title("C) Boxplots", loc='left')
 
-ax[1, 1].set_title("D) Type 2 density plots", loc='left')
+ax[1, 1].set_title("D) Median density plots", loc='left')
 ax[1, 1].set_xlabel("log(2)-brightness")
-
-ax[0, 2].set_title("E) Boxplots", loc='left')
-
-ax[1, 2].set_title("F) Median density plots", loc='left')
 
 sample_list = df_t1_m.columns.values.tolist()[1:]
 for sample in sample_list:
@@ -78,31 +73,16 @@ sns.kdeplot(df_t2_m['Median'], color=dark_green, ax=ax[0, 0], legend=True)
 sns.kdeplot(df_t1_u['Median'], color=dark_blue, ax=ax[1, 0], legend=True)
 sns.kdeplot(df_t2_u['Median'], color=dark_red, ax=ax[1, 0], legend=True)
 
-for sample in sample_list:
-	# TYPE 1
-	sns.kdeplot(df_t1_m[sample], color=light_yellow, ax=ax[0, 1])
-	sns.kdeplot(df_t1_u[sample], color=light_blue, ax=ax[0, 1])
-	# TYPE 2
-	sns.kdeplot(df_t2_m[sample], color=light_green, ax=ax[1, 1])
-	sns.kdeplot(df_t2_u[sample], color=light_red, ax=ax[1, 1])
-
 # TYPE 1 MEDIAN
-sns.kdeplot(df_t1_m['Median'], color=dark_yellow, ax=ax[0, 1], legend=True)
-sns.kdeplot(df_t1_u['Median'], color=dark_blue, ax=ax[0, 1], legend=True)
+sns.kdeplot(df_t1_m['Median'], color=dark_yellow, ax=ax[1, 1], legend=True)
+sns.kdeplot(df_t1_u['Median'], color=dark_blue, ax=ax[1, 1], legend=True)
 # TYPE 2 MEDIAN
 sns.kdeplot(df_t2_u['Median'], color=dark_red, ax=ax[1, 1], legend=True)
 sns.kdeplot(df_t2_m['Median'], color=dark_green, ax=ax[1, 1], legend=True)
 
-# TYPE 1 MEDIAN
-sns.kdeplot(df_t1_m['Median'], color=dark_yellow, ax=ax[1, 2], legend=True)
-sns.kdeplot(df_t1_u['Median'], color=dark_blue, ax=ax[1, 2], legend=True)
-# TYPE 2 MEDIAN
-sns.kdeplot(df_t2_u['Median'], color=dark_red, ax=ax[1, 2], legend=True)
-sns.kdeplot(df_t2_m['Median'], color=dark_green, ax=ax[1, 2], legend=True)
-
 # ------------------------------------------------------------------#
 
-sns.boxplot(ax=ax[0, 2], data=[df_t1_u['Median'], df_t1_m['Median'], df_t2_m[
+sns.boxplot(ax=ax[0, 1], data=[df_t1_u['Median'], df_t1_m['Median'], df_t2_m[
 	'Median'], df_t2_u['Median']])
 
 lst = ('Unmethylated Type 1', 'Methylated Type 1', 'Unmethylated Type 2',

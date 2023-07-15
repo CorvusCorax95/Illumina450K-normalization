@@ -28,7 +28,12 @@ hex_purple = "#360c8a"
 
 df_meth = pd.read_csv('log_meth.csv', sep='\t', index_col=0)
 df_unmeth = pd.read_csv('log_unmeth.csv', sep='\t', index_col=0)
+
 df_beta = pd.read_csv('beta_values.csv', sep='\t', index_col=0)
+df_mean_beta = pd.read_csv('mean_norm_beta.csv', sep='\t', index_col=0)
+df_minmax_beta = pd.read_csv('minmax_norm_beta.csv', sep='\t', index_col=0)
+df_qn_beta = pd.read_csv('qn_norm_beta.csv', sep='\t', index_col=0)
+
 df_t1 = pd.read_csv('beta_values_type1.csv', sep='\t', index_col=0)
 df_t2 = pd.read_csv('beta_values_type2.csv', sep='\t', index_col=0)
 
@@ -61,38 +66,37 @@ fig, ax = plt.subplots()
 
 fig.suptitle("Value Ranges")
 
-df_mean_u['Median'] = df_mean_u.median(axis=1)
-df_mean_m['Median'] = df_mean_m.median(axis=1)
-df_qn_u['Median'] = df_qn_u.median(axis=1)
-df_qn_m['Median'] = df_qn_m.median(axis=1)
-df_minmax_u['Median'] = df_minmax_u.median(axis=1)
-df_minmax_m['Median'] = df_minmax_m.median(axis=1)
-df_meth['Median'] = df_meth.median(axis=1)
-df_unmeth['Median'] = df_unmeth.median(axis=1)
+del df_mean_u['type']
+del df_mean_m['type']
+del df_minmax_u['type']
+del df_minmax_m['type']
+del df_meth['type']
+del df_unmeth['type']
+del df_bmiq['type']
+del df_beta['type']
 
+df_mean_beta['Median'] = df_mean_beta.median(axis=1)
+df_qn_beta['Median'] = df_qn_beta.median(axis=1)
+df_minmax_beta['Median'] = df_minmax_beta.median(axis=1)
+df_beta['Median'] = df_beta.median(axis=1)
 df_bmiq['Median'] = df_bmiq.median(axis=1)
 
 plot = sns.boxplot(data=[
-	df_meth['Median'],
-	df_mean_m['Median'],
-	df_minmax_m['Median'],
-	df_qn_m['Median'],
-	df_unmeth['Median'],
-	df_mean_u['Median'],
-	df_minmax_u['Median'],
-	df_qn_u['Median'],
+	df_beta['Median'],
+	df_mean_beta['Median'],
+	df_minmax_beta['Median'],
+	df_qn_beta['Median'],
 	df_bmiq['Median']])
 
 xtick_loc = plot.get_xticks()
 plot.set_xticks(ticks=xtick_loc, labels=[
-	"Raw (m)",
-	"mean (m)",
-	"min-max (m)",
-	"QN (m)",
-	"raw (u)",
-	"mean (u)",
-	"min-max (u)",
-	"QN (u)",
-	"BMIQ"])
+	"Beta-value", "Mean", "Minmax", "QN", "BMIQ"])
+
+print(df_beta.std())
+print(df_mean_beta.std())
+print(df_minmax_beta.std())
+print(df_qn_beta.std())
+print(df_bmiq.std())
+
 
 plt.show()

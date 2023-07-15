@@ -35,8 +35,8 @@ df_beta_t2 = pd.read_csv('beta_values_type2.csv', sep='\t', index_col=0)
 df_beta_t1['Median'] = df_beta_t1.median(axis=1)
 df_beta_t2['Median'] = df_beta_t2.median(axis=1)
 
-df_qn_beta_t1 = norm.quantile_normaliziation(df_beta_t1, 'Median')
-df_qn_beta_t2 = norm.quantile_normaliziation(df_beta_t2, 'Median')
+df_qn_beta_t1 = norm.quantile_normalization(df_beta_t1, 'Median')
+df_qn_beta_t2 = norm.quantile_normalization(df_beta_t2, 'Median')
 
 
 fig, ax = plt.subplots(2, sharex=True)

@@ -38,6 +38,10 @@ df_beta_norm = pd.read_csv('bmiq_norm.csv', sep='\t', index_col=0)
 df_beta_t1 = df_t1.copy()
 df_beta_t2 = df_t2.copy()
 
+
+del df_beta['type']
+del df_beta_norm['type']
+
 df_beta_t1['Median'] = df_beta_t1.median(axis=1)
 df_beta_t2['Median'] = df_beta_t2.median(axis=1)
 df_beta['Median'] = df_beta.median(axis=1)

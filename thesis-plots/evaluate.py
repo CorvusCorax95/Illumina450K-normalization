@@ -35,21 +35,21 @@ df_minmax_beta_t1 = norm.min_max_normalization(df_beta_t1)
 df_minmax_beta_t2 = norm.min_max_normalization(df_beta_t2)
 df_mean_beta_t1 = norm.mean_normalization(df_beta_t1)
 df_mean_beta_t2 = norm.mean_normalization(df_beta_t2)
-df_qn_beta_t1 = norm.quantile_normaliziation(df_beta_t1, 'Median')
-df_qn_beta_t2 = norm.quantile_normaliziation(df_beta_t2, 'Median')
+df_qn_beta_t1 = norm.quantile_normalization(df_beta_t1, 'Median')
+df_qn_beta_t2 = norm.quantile_normalization(df_beta_t2, 'Median')
 
 
 lst = [df_beta, df_mean_u, df_mean_m, df_minmax_u, df_minmax_m, df_qn_u, df_qn_m]
-
 
 for df in lst:
 	df['mean'] = df.mean(axis=1)
 	df['median'] = df.median(axis=1)
 	df['variance'] = df.var(axis=1)
 
-	count_I = 0
-	count_II = 0
+count_I = 0
+count_II = 0
 probe_list = df_beta.index.to_list()
+
 for df in lst:
 	count_I = 0
 	count_II = 0
@@ -60,3 +60,4 @@ for df in lst:
 		if df['RB_E_001']['type'] == 'II' and count_II < 5:
 			print(df['RB_E_001']['type'])
 			count_II = count_II + 1
+

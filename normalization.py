@@ -25,8 +25,11 @@ def min_max_normalization(df):
 
 # QN muss auf intensities durchgeführt werden
 @streamlit.cache_data
-def quantile_normalization(reference):
+def quantile_normalization(sample_list, reference):
 	df_meth, df_unmeth = prep.get_dataframe(False)
+
+	df_meth = df_meth[sample_list]
+	df_unmeth = df_unmeth[sample_list]
 
 	df_meth['Median'] = df_meth.median(axis=1)
 	df_unmeth['Median'] = df_unmeth.median(axis=1)
