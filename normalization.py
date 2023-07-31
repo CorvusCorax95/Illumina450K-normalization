@@ -39,6 +39,19 @@ def quantile_normalization(sample_list, reference):
 	df_qn = prep.beta_value(df_qn_meth, df_qn_unmeth, 100)
 	return df_qn
 
+@streamlit.cache_data
+def qn_for_meth(df_meth, df_unmeth, reference):
+	df_meth = df_meth[sample_list]
+	df_unmeth = df_unmeth[sample_list]
+
+	df_meth['Median'] = df_meth.median(axis=1)
+	df_unmeth['Median'] = df_unmeth.median(axis=1)
+
+	df_qn_meth = qn.quantile_normalize(df_meth, target=df_meth[reference])
+	df_qn_unmeth = qn.quantile_normalize(df_unmeth, target=df_unmeth[reference])
+	df_qn = prep.beta_value(df_qn_meth, df_qn_unmeth, 100)
+	return df_qn
+
 
 def assign_probes_to_state(df):
 	df = df.applymap(lambda x: set_states(x) if type(x) == float else x)
@@ -288,4 +301,7 @@ def bmiq(df_beta):
 				                       index=probe_list_t2, columns=[sample])
 			else:
 				df_bmiq[sample] = normalized_values
-	return df_bmiq
+	frames = [df_bmiq, df_beta_t1]
+	df = pd.concat(frames)
+	df_res = df.sort_index()
+	return df_res

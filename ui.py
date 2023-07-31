@@ -4,6 +4,7 @@ import streamlit as st
 
 import plotting as plot
 import prepare_data as prep
+import normalization as norm
 
 import user
 
@@ -27,30 +28,40 @@ def make_header():
 	_streamlit_config()
 	# HEADER #
 	with st.container():  # for wrapping contents
-		st.header("Normalization of Illumina HumanMethylation 450K Beadchips")
+		st.header("Normalization of Illumina HumanMethylation Beadchips")
 		st.subheader(
 			"Methylation normalization because technical variability sucks.")
 
 	# TABLE #
-	with st.container():
-		left_column, right_column = st.columns(2)
-		with left_column:
-			st.header("Who I am")
-			st.write("""
-            Lisa
-            - Bioinformatics Student (Bachelor of Science)
-            - struggling my way through university
-            """
-			         )
-		with right_column:
-			st.header("My University")
-			st.write("""
-            Saarland University
-            - Center of Bioinformatics
-            - Chair of Algorithmic Bioinformatics
-            - university in a land just used for size comparisons
-            """
-			         )
+	with st.expander("See information."):
+		st.header("What this tool does")
+		st.write("""
+		This little website makes viewing your methylation data fun and 
+		easy with colourful graphs. It is especially designed to view and 
+		preprocess data from Illumina 450K and 850K Beadchips.
+		The most interesting part should be the 
+		Beta-Mixture-Quantile-Normalization.
+        """
+		         )
+		st.header("What to keep in mind")
+		st.write("""
+		In the sidebar you can select which normalizations you want to 
+		see, some additional info and if you probably want to download 
+		all preprocessed files in one zip file.
+		Htting the "Run Normalization" button (obviously) starts 
+		calculating what you selected.\n
+		In the sample selection underneath you can select how many 
+		samples you want to view.
+		Depending on how large the dataset is it can take quite a while 
+		to process. Small spinners should show you that the program 
+		does something and hasn't crashed.\n
+		Important: To perform the Beta-Mixture-Quantile-Normalization 
+		correctly you need to fit a three-state beta-mixture model to 
+		your data. I used the betamix tool by Schröder, Rahmann and 
+		stated the workflow in a file named "betamix-walkthrough" that 
+		you can find among the other files in my git.
+        """
+		         )
 
 
 def make_page():
@@ -62,36 +73,38 @@ def make_page():
 			b_qn = st.checkbox('Quantile Normalization')
 			b_minmax = st.checkbox('Min-Max Normalization')
 			b_bmiq = st.checkbox('Beta-Mixture-Quantile Normalization')
-			#b_qn_bmiq = st.checkbox('Quantile Normalization + '
-			#                        'Beta-Mixture-Quantile Normalization')
+			b_qn_bmiq = st.checkbox('Quantile Normalization + '
+			                        'Beta-Mixture-Quantile Normalization')
 			st.info('Additional Info.')
-			show_types = st.checkbox('Additional view split by types')
+			show_types = st.checkbox('Additional view: split by types')
 			show_boxplot = st.checkbox('Additional boxplots for normalizations')
 
 			submitted = st.form_submit_button("Run Normalization")
 	df_beta = plot.beta_value()
-	options = st.multiselect('Select Samples.', df_beta.columns.values.tolist())
+	options = st.multiselect('Select Samples.',
+	                         df_beta.columns.values.tolist(), default=[
+			"RB_E_001", "RB_E_002", "RB_E_003"], )
 	st.write(df_beta[options])
 	df_beta = df_beta[options]
 	if submitted:
-		make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, #b_qn_bmiq,
-		           show_types, show_boxplot)
+		make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, b_qn_bmiq,
+		           show_types, show_boxplot, options)
+	with st.sidebar:
+		if b_download:
+			shutil.make_archive("compressed_download", 'zip', "download")
 
-	if b_download:
-		shutil.make_archive("compressed_download", 'zip', "download")
-
-		filename = "compressed_download.zip"
-		with open(filename, "rb") as fp:
-			btn = st.download_button(
-				label="Download normalized values as csv",
-				data=fp,
-				file_name="compressed_download.zip",
-				mime="application/zip",
-				help="When this button is clicked, the site will reload.")
+			filename = "compressed_download.zip"
+			with open(filename, "rb") as fp:
+				btn = st.download_button(
+					label="Download normalized values as zip",
+					data=fp,
+					file_name="compressed_download.zip",
+					mime="application/zip",
+					help="When this button is clicked, the site will reload.")
 
 
-def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, show_types,
-               show_boxplot):
+def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, b_qn_bmiq, show_types,
+               show_boxplot, options):
 	"""Cares about all the plots and Dataframe-Views"""
 
 	with st.spinner("Waiting for data..."):
@@ -142,7 +155,32 @@ def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, show_types,
 	with st.spinner("Wait for Normalization..."):
 		if b_bmiq:
 			st.subheader("BMIQ Normalization")
+			st.info("The BMIQ Normalization as presented in Teschendorff et "
+			        "al. (2013) only proposed a normalization for type 2 "
+			        "probes. This leads to a combined histogram with one type "
+			        "normalized and one type as raw beta values. To see the "
+			        "normalization better, tick the box 'Additional view: "
+			        "split by types'")
 			df_bmiq = plot.bmiq_plot(df_beta)
 			user.convert_df(df_bmiq, 'download/bmiq.csv')
 			if show_boxplot:
 				plot.boxplots(df_bmiq)
+			if show_types:
+				df_bmiq_w_types = prep.add_probetypes(df_bmiq)
+				df_bmiq_t1, df_bmiq_t2 = prep.split_types(df_bmiq_w_types)
+				plot.default_plots(df_bmiq_t1, df_bmiq_t2, "BMIQ "
+				                                           "Normalized")
+	with st.spinner("Wait for Normalization..."):
+		if b_qn_bmiq:
+			st.subheader("QN.BMIQ Normalization")
+			df_qn_beta = norm.quantile_normalization(options, 'Median')
+			df_qn_bmiq = plot.bmiq_plot(df_qn_beta)
+			user.convert_df(df_qn_bmiq, 'download/bmiq.csv')
+			if show_boxplot:
+				plot.boxplots(df_qn_bmiq)
+			if show_types:
+				df_qn_bmiq_w_types = prep.add_probetypes(df_qn_bmiq)
+				df_qn_bmiq_t1, df_qn_bmiq_t2 = prep.split_types(
+					df_qn_bmiq_w_types)
+				plot.default_plots(df_qn_bmiq_t1, df_qn_bmiq_t2, "QN.BMIQ "
+				                                           "Normalized")

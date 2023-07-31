@@ -87,11 +87,11 @@ def log_data():
 
 def output_measures(df):
 	""""Useful output measures."""
-	sample_list = df.columns.values.tolist()[1:]
+	sample_list = df.columns.values.tolist()
 	means = []
 	for x in sample_list:
 		means.append(df[x].mean())
-	return np.average(means), np.std(means)
+	return np.average(means), np.var(means), np.std(means)
 
 
 def beta_value(df_meth, df_unmeth, offset):

@@ -1,12 +1,6 @@
 import matplotlib.pyplot as plt
-import mpld3
-import pandas as pd
-import streamlit.components.v1 as components
-import seaborn as sns
-
-import altair as alt
-
 import streamlit as st
+import seaborn as sns
 
 from streamlit_extras.chart_container import chart_container
 from multipledispatch import dispatch
@@ -17,14 +11,15 @@ from type import DataType
 
 
 # can take dataframes with type column
-def _density_plot(df, title):
+def _hist_plot(df):
 	"""Makes a density-plot from the Dataframe, a title and set boundaries
 	for the x axis."""
 	plt.style.use('dark_background')
-	df.plot.kde(linewidth=1, figsize=(20, 10))
-	plt.title(title)
+	for sample in df.columns.values.tolist():
+		sns.histplot(df[sample], kde=False, bins=30,
+		             label=sample, element='poly', fill=False)
 	plt.legend(loc="upper right", ncols=2)
-	plt.grid(True)
+	plt.grid(True, alpha=0.35)
 
 
 # can take dataframes with type column
@@ -32,8 +27,8 @@ def containerize_chart(df, name):
 	"""Container makes usage of streamlit-extras possible."""
 	with chart_container(df):
 		st.write(name)
-		st.pyplot(_density_plot(df, name))
-		st.write("(Mean, STD): ", prep.output_measures(df))
+		st.pyplot(_hist_plot(df))
+		st.write("(Mean, Variance, STD): ", prep.output_measures(df))
 
 
 def _switch(data_type, df_beta):
@@ -82,41 +77,6 @@ def default_plots(df_t1, df_t2, title):
 		containerize_chart(df_t2, str(title + " Type 2 Probes"))
 
 
-def quantile_normalized_plots():
-	"""
-	1. Set median to be the last column (acts as default reference).
-	2. Build a selectbox to set your reference.
-	3. Make normalization.
-	"""
-	st.header("Quantile Normalization")
-	df_log_meth, df_log_unmeth = prep.log_data()
-	# QUANTILE NORMALIZED
-	col_left, col_right = st.columns(2)
-	with col_left:
-		df_log_meth['Median'] = df_log_meth.median(axis=1)
-		reference_options = df_log_meth.columns.values.tolist()[2:]
-		reference_meth = st.selectbox('Which reference do you want to use?',
-		                              reference_options,
-		                              (len(reference_options) - 1), key=0)
-		df_qn_meth = norm.quantile_normalization(df_log_meth, reference_meth)
-		containerize_chart(df_qn_meth, "Quantile Normalized plot - methylated")
-	with col_right:
-		## QUANTILE NORMALIZED
-		# last column as Median column
-		df_log_unmeth['Median'] = df_log_unmeth.median(axis=1)
-		reference_options = df_log_unmeth.columns.values.tolist()[2:]
-		reference_unmeth = st.selectbox('Which reference do you want to use?',
-		                                reference_options,
-		                                (len(reference_options) - 1),
-		                                key="reference")
-		df_qn_unmeth = norm.quantile_normalization(df_log_unmeth,
-		                                           reference_unmeth)
-		containerize_chart(df_qn_meth, "Quantile Normalized plot - "
-		                               "unmethylated")
-
-	return df_qn_meth, df_qn_unmeth
-
-
 @st.cache_data
 def beta_value():
 	df_meth, df_unmeth = prep.get_dataframe(True)
@@ -138,14 +98,21 @@ def boxplots(df):
 	with chart_container(df[columns]):
 		st.write("Boxplot")
 		st.pyplot(
-			_boxplot_df(df[columns], "Normalized Boxplot"))
+			_boxplot_df(df[columns]))
 
 
-def _boxplot_df(df, title):
+def _boxplot_df(df):
 	"""Makes a boxplot from the Dataframe, a title and set boundaries
 	for the x axis"""
+	boxprops = dict(color='lightblue', linewidth=5)
+	flierprops = dict(marker='o', markerfacecolor='firebrick')
+	medianprops = dict(linewidth=5, color='yellow')
+	meanprops = dict(marker='D', markeredgecolor='green',
+	                 markerfacecolor='green',
+	                 linewidth=5)
 	labels = df.columns.values.tolist()
+	plt.boxplot(df, labels=labels, showfliers=True, showmeans=True,
+	            showcaps=True, showbox=True, flierprops=flierprops,
+	            boxprops=boxprops, meanprops=meanprops, medianprops=medianprops)
 	plt.style.use('dark_background')
-	plt.boxplot(df, labels=labels)
-	plt.title(title)
-	plt.grid(True)
+	plt.grid(True, alpha=0.35)
