@@ -2,6 +2,8 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import normalization as norm
+
 # WORKS
 
 sns.set()
@@ -26,14 +28,7 @@ light_purple = (0.678, 0.596, 0.839, 1)  # Type 2 Unmethylated
 dark_purple = (0.212, 0.047, 0.541, 1)  # Type 2 Unmethylated
 hex_purple = "#360c8a"
 
-df_meth = pd.read_csv('log_meth.csv', sep='\t', index_col=0)
-df_unmeth = pd.read_csv('log_unmeth.csv', sep='\t', index_col=0)
-
 df_beta = pd.read_csv('beta_values.csv', sep='\t', index_col=0)
-df_mean_beta = pd.read_csv('mean_norm_beta.csv', sep='\t', index_col=0)
-df_minmax_beta = pd.read_csv('minmax_norm_beta.csv', sep='\t', index_col=0)
-df_qn_beta = pd.read_csv('qn_norm_beta.csv', sep='\t', index_col=0)
-
 df_t1 = pd.read_csv('beta_values_type1.csv', sep='\t', index_col=0)
 df_t2 = pd.read_csv('beta_values_type2.csv', sep='\t', index_col=0)
 
@@ -62,41 +57,59 @@ df_qn_m_t1 = pd.read_csv('qn_norm_m_t1.csv', sep='\t', index_col=0)
 df_qn_u_t2 = pd.read_csv('qn_norm_u_t2.csv', sep='\t', index_col=0)
 df_qn_m_t2 = pd.read_csv('qn_norm_m_t2.csv', sep='\t', index_col=0)
 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(2, 2)
 
-fig.suptitle("Value Ranges")
+fig.suptitle("Compare normalizations")
 
+ax[0, 0].set_title("A) BMIQ Normalized Density", loc='left')
+ax[0, 0].set_xlabel("beta-values")
+
+ax[1, 0].set_title("B) Quantile Normalization Density", loc='left')
+ax[1, 0].set_xlabel("beta-values")
+
+ax[0, 1].set_title("C) Mean Normalization Density", loc='left')
+ax[0, 1].set_xlabel("beta-values")
+
+ax[1, 1].set_title("D) Min-Max Normalization Density", loc='left')
+ax[1, 1].set_xlabel("beta-values")
+
+sample_list = df_bmiq.columns.values.tolist()[1:]
+
+del df_bmiq['type']
 del df_mean_u['type']
 del df_mean_m['type']
 del df_minmax_u['type']
 del df_minmax_m['type']
-del df_meth['type']
-del df_unmeth['type']
-del df_bmiq['type']
-del df_beta['type']
 
-df_mean_beta['Median'] = df_mean_beta.median(axis=1)
-df_qn_beta['Median'] = df_qn_beta.median(axis=1)
-df_minmax_beta['Median'] = df_minmax_beta.median(axis=1)
-df_beta['Median'] = df_beta.median(axis=1)
 df_bmiq['Median'] = df_bmiq.median(axis=1)
 
-plot = sns.boxplot(data=[
-	df_beta['Median'],
-	df_mean_beta['Median'],
-	df_minmax_beta['Median'],
-	df_qn_beta['Median'],
-	df_bmiq['Median']])
+df_beta_mean = pd.read_csv("mean_norm_beta.csv", sep='\t', index_col=0)
+df_beta_minmax = pd.read_csv("minmax_norm_beta.csv", sep='\t', index_col=0)
+df_beta_qn = pd.read_csv("qn_norm_beta.csv", sep='\t', index_col=0)
+df_beta_bmiq = pd.read_csv("bmiq_norm.csv", sep='\t', index_col=0)
 
-xtick_loc = plot.get_xticks()
-plot.set_xticks(ticks=xtick_loc, labels=[
-	"Beta-value", "Mean", "Minmax", "QN", "BMIQ"])
+sample_list = df_beta_bmiq.columns.values.tolist()[1:]
+for sample in sample_list:
+	sns.kdeplot(df_beta_mean[sample], color=light_yellow, ax=ax[0, 1])
+	sns.kdeplot(df_beta_minmax[sample], color=light_green, ax=ax[1, 1])
+	sns.kdeplot(df_beta_bmiq[sample], color=light_purple, ax=ax[0, 0])
 
-print(df_beta.std())
-print(df_mean_beta.std())
-print(df_minmax_beta.std())
-print(df_qn_beta.std())
-print(df_bmiq.std())
+sample_list = df_beta_qn.columns.values.tolist()[1:]
+for sample in sample_list:
+	sns.kdeplot(df_beta_qn[sample], color=light_red, ax=ax[1, 0])
 
+df_beta_mean['Median'] = df_beta_mean.median(axis=1)
+df_beta_minmax['Median'] = df_beta_minmax.median(axis=1)
+df_beta_qn['Median'] = df_beta_qn.median(axis=1)
+df_beta_bmiq['Median'] = df_beta_qn.median(axis=1)
+
+sns.kdeplot(df_beta_mean['Median'], color=dark_yellow, ax=ax[0, 1], legend=True)
+
+sns.kdeplot(df_beta_minmax['Median'], color=dark_green, ax=ax[1, 1],
+            legend=True)
+
+sns.kdeplot(df_beta_qn['Median'], color=dark_red, ax=ax[1, 0], legend=True)
+
+sns.kdeplot(df_bmiq['Median'], color=dark_purple, ax=ax[0, 0], legend=True)
 
 plt.show()

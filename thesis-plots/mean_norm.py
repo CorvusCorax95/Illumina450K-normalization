@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 import normalization as norm
 
-sns.set()
+sns.set(font_scale=2)
 # ------------------------------------------------------------------#
 light_yellow = (1, 0.949, 0.639, 1)  # Type 1 Methylated
 dark_yellow = (0.91, 0.635, 0, 1)  # Type 1 Methylated
@@ -49,13 +49,14 @@ ax[1].set_xlabel("beta-values")
 sample_list = df_mean_beta_t1.columns.values.tolist()[1:]
 
 for sample in sample_list:
-	sns.kdeplot(df_mean_beta_t1[sample], color=light_blue, ax=ax[0])
+	sns.kdeplot(df_mean_beta[sample], color=light_blue, ax=ax[1])
+	sns.kdeplot(df_mean_beta_t1[sample], color=light_blue, ax=ax[1])
 	sns.kdeplot(df_mean_beta_t2[sample], color=light_purple, ax=ax[1])
 
 df_mean_beta_t1['Median'] = df_mean_beta_t1.median(axis=1)
 df_mean_beta_t2['Median'] = df_mean_beta_t2.median(axis=1)
 
-sns.kdeplot(df_mean_beta_t1['Median'], color=dark_blue, ax=ax[0])
+sns.kdeplot(df_mean_beta_t1['Median'], color=dark_blue, ax=ax[1])
 sns.kdeplot(df_mean_beta_t2['Median'], color=dark_purple, ax=ax[1])
 
 plt.show()

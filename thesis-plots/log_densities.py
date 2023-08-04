@@ -25,7 +25,7 @@ df_t2_u['Median'] = df_t2_u.median(axis=1)
 ### SEABORN ###
 
 # makes two side-by-side log value densities
-sns.set()
+sns.set(font_scale=1.7)
 # ------------------------------------------------------------------#
 light_yellow = (1, 0.949, 0.639, 1)  # Type 1 Methylated
 dark_yellow = (0.91, 0.635, 0, 1)  # Type 1 Methylated
