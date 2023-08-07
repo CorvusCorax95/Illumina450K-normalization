@@ -5,12 +5,13 @@ attached the code in the file "betamix-processing" to show how I did it.
 from prepare-data.py.
 2) After converting this dataframe to a .csv we split the dataframe into two
 files corresponding to one of the two probe types.
-3) We give these to the df_to_h5 methods in prepare_data.py-
+3) We give these to the df_to_h5 methods in prepare_data.py
 4) For df_to_h5 to function we need to delete a possible old h5 file by hand.
 5) We end up with two files (type1_probes.h5 & type2_probes.h5) which have the
 needed format to be fed into the betamix tool.
-6) betamix-command: python estimate.py -F -t 1E-5 mytestfile.h5 --resultpath mytestfile-est.h5
-7) betamix-command: python evaluate.py -F -i snps -f pdf mytestfile.h5 mytestfile-est.h5 mytestfile-eval.h5
+6) betamix-command: python estimate.py -F -t 1E-5 type1-probes.h5 --resultpath
+est-snps.h5
+7) betamix-command: python evaluate.py -F -i snps -f pdf type1-probes.h5 type1-probes-est.h5 type1-probes-eval.h5
 8) After performing the estimation and evaluation step we copy the files we just
  made to the folder betamix-results.
 9) In the method bmiq() we pull the parameters and classes from the estimation

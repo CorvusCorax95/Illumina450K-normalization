@@ -155,3 +155,20 @@ def get_classes(path, probe_list, n):
 	subsubgrp = subgrp['mix']
 	data = subsubgrp['classes']
 	return pd.DataFrame(data, index=probe_list, columns=["sample"])
+
+def df_to_h5(df, filename):
+	"""As preparation to use the betamix-tool by Schröder, Rahmann the
+	dataframe is converted to a fitting h5 file."""
+	# delete existing file first by hand!
+	sample_list = df.columns.values.tolist()[1:]
+	df.reset_index(drop=True)
+	filename = filename + ".h5"
+	hf = h5.File(filename, "w")
+	group = hf.create_group("data")
+	i = 0
+	for sample in sample_list:
+		array = np.array(df[sample], dtype=np.float64)
+		group.create_dataset(str(i), data=np.sort(array))
+		i = i + 1
+	hf.close()
+	print("Done converting.")

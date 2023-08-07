@@ -84,10 +84,10 @@ def beta_value():
 	return df_beta
 
 
-def bmiq_plot(df):
+def bmiq_plot(df, df_sample_to_numbers):
 	"""Provides necessary dataframes and calls all corresponding methods."""
 	df_beta = prep.add_probetypes(df)
-	df_bmiq = norm.bmiq(df_beta)
+	df_bmiq = norm.bmiq(df_beta, df_sample_to_numbers)
 	containerize_chart(df_bmiq, "BMIQ Values")
 	return df_bmiq
 

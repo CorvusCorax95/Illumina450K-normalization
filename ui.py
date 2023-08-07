@@ -1,5 +1,6 @@
 import shutil
 
+import pandas as pd
 import streamlit as st
 
 import plotting as plot
@@ -81,6 +82,9 @@ def make_page():
 
 			submitted = st.form_submit_button("Run Normalization")
 	df_beta = plot.beta_value()
+
+	df_sample_to_numbers = pd.DataFrame(df_beta.columns.values.tolist(),
+	                                    columns=["samples"])
 	options = st.multiselect('Select Samples.',
 	                         df_beta.columns.values.tolist(), default=[
 			"RB_E_001", "RB_E_002", "RB_E_003"], )
@@ -88,7 +92,7 @@ def make_page():
 	df_beta = df_beta[options]
 	if submitted:
 		make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, b_qn_bmiq,
-		           show_types, show_boxplot, options)
+		           show_types, show_boxplot, options, df_sample_to_numbers)
 	with st.sidebar:
 		if b_download:
 			shutil.make_archive("compressed_download", 'zip', "download")
@@ -104,7 +108,7 @@ def make_page():
 
 
 def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, b_qn_bmiq, show_types,
-               show_boxplot, options):
+               show_boxplot, options, df_sample_to_numbers):
 	"""Cares about all the plots and Dataframe-Views"""
 
 	with st.spinner("Waiting for data..."):
@@ -161,7 +165,7 @@ def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, b_qn_bmiq, show_types,
 			        "normalized and one type as raw beta values. To see the "
 			        "normalization better, tick the box 'Additional view: "
 			        "split by types'")
-			df_bmiq = plot.bmiq_plot(df_beta)
+			df_bmiq = plot.bmiq_plot(df_beta, df_sample_to_numbers)
 			user.convert_df(df_bmiq, 'download/bmiq.csv')
 			if show_boxplot:
 				plot.boxplots(df_bmiq)
