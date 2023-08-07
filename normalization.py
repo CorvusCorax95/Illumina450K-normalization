@@ -122,7 +122,7 @@ def bmiq_unmethylated_case(df_t2_unmethylated, unmethylated_probes,
 			q_u_list.append(q_u)
 			if q_u > 1:
 				x = x+1
-
+	print("Amount unmethylated = ", x)
 	df = pd.DataFrame(q_u_list, index=unmethylated_probes)
 	# q_u_list komplett <1
 	return df, q_u_list
@@ -141,13 +141,13 @@ def bmiq_methylated(df_t2_methylated, methylated_probes, mean_type2_methylated,
 	q_m_list = []
 	x=0
 	#print(methylated_probes)
-	if 'cg00009088' in methylated_probes:
-		print("Probe cg00009088 is in methylated_probes.")
+	if 'cg00003784' in methylated_probes:
+		print("Probe cg00003784 is in methylated_probes.")
 	for probe in methylated_probes:
 		# probe da
 		value = df_t2_methylated.loc[probe]
-		if probe == 'cg00009088':
-			print(value)
+		if probe == 'cg00003784':
+			print("Beta Value", value)
 		if value <= mean_type2_methylated:
 			m2l_list.append(probe)
 		else:
@@ -163,11 +163,6 @@ def bmiq_methylated(df_t2_methylated, methylated_probes, mean_type2_methylated,
 			q_m = stats.beta.ppf(p_m, df_t1_parameters['a']['M'],
 			                     df_t1_parameters['b']['M'], loc=0, scale=1)
 			q_m_list.append(q_m)
-			# if probe == 'cg00009088':
-			# 	print("inside bmiq_methylated")
-			# 	print(rb)  # 0.1424
-			# 	print(p_m)  # 8.88 * e-21
-			# 	print(q_m)  # 0.22
 			if q_m > 1:
 				x = x+1
 		else:
@@ -181,18 +176,13 @@ def bmiq_methylated(df_t2_methylated, methylated_probes, mean_type2_methylated,
 			                         df_t1_parameters['b']['M'], loc=0,
 			                         scale=1)
 			q_m_list.append(q_m)
-			# if probe == 'cg00009088':
-			# 	print("inside bmiq_methylated")
-			# 	print(rb)  # 0.1424
-			# 	print(p_m)  # 8.88 * e-21
-			# 	print(q_m)  # 0.22
 			if q_m > 1:
 				x = x+1
 
 	df = pd.DataFrame(q_m_list, index=methylated_probes)
-	if 'cg00009088' in methylated_probes:
+	if 'cg00003784' in methylated_probes:
 		print("Probe found in methylated probes")
-	if 'cg00009088' in df.index.values.tolist():
+	if 'cg00003784' in df.index.values.tolist():
 		print("Probe found in index of  meth dataframe")
 	print("Amount methylated: ", x)
 	# probe weg
@@ -220,35 +210,34 @@ def bmiq_hemimethylated(df_t2_hemimethylated, df_t2_unmethylated,
 	nminH = max(eta_u_list) - deltaUH
 	nmaxH = min(eta_m_list) - deltaHM
 	delta_eta_H = nmaxH - nminH
-	# print("Hemi Maximum: ", maxH)
-	# print("Hemi Minimum: ", minH)
-	# print("Meth Min:", minM)
-	# print("Unmeth Max:", maxU)
-	# print("Delta beta H: ", delta_beta_H)
-	# print("Delta UH: ", deltaUH)
-	# print("Delta HM: ", deltaHM)
-	# print("Max & min eta u list: ", max(eta_u_list), min(eta_u_list))
-	# print("Max & min eta m list: ", max(eta_m_list), min(eta_m_list))
-	# print("nmaxH: ", nmaxH)
-	# print("nminH: ", nminH)
-	# print("Delta eta H: ", delta_eta_H)
-
+	print("maxH: ", maxH)
+	print("minH: ", minH)
+	print("minM:", minM)
+	print("maxU:", maxU)
+	print("Delta beta H: ", delta_beta_H)
+	print("Delta UH: ", deltaUH)
+	print("Delta HM: ", deltaHM)
+	print("Max & min eta u list: ", max(eta_u_list), min(eta_u_list))
+	print("Max & min eta m list: ", max(eta_m_list), min(eta_m_list))
+	print("nmaxH: ", nmaxH)
+	print("nminH: ", nminH)
+	print("Delta eta H: ", delta_eta_H)
 
 	x = 0
 	dilation_factor = delta_eta_H / delta_beta_H
 	for probe in hemimethylated_probes:
-		if probe == 'cg00009088':
-			print("beta 2 h: ", df_t2_hemimethylated[probe])
-		eta_2_H = nminH + dilation_factor * (df_t2_hemimethylated[probe] - minH)
+		eta_2_H =  nminH + dilation_factor * (df_t2_hemimethylated[probe] -
+		                                      minH)
+		eta_2_H_list.append(eta_2_H)
 		if eta_2_H > 1:
 			x = x+1
-		eta_2_H_list.append(eta_2_H)
-	print("Amount = ", x)
-	df = pd.DataFrame(eta_2_H_list, index=hemimethylated_probes)
-	if 'cg00009088' in hemimethylated_probes:
-		print("Probe cg00009088 found in hemimethylated probes")
-	if 'cg00009088' in df.index.values.tolist():
-		print("Probe cg00009088 found in index of hemi dataframe")
+	print("Amount hemimethylated= ", x)
+	df = pd.DataFrame(eta_2_H_list,
+	                  index=df_t2_hemimethylated.index.values.tolist())
+	if 'cg00003784' in hemimethylated_probes:
+		print("Probe cg00003784 found in hemimethylated probes")
+	if 'cg00003784' in df.index.values.tolist():
+		print("Probe cg00003784 found in index of hemi dataframe")
 	return df
 
 
@@ -265,7 +254,6 @@ def bmiq(df_beta, df_sample_to_numbers):
 	'''list with all names of probes with type 2'''
 	sample_list = df_beta.columns.values.tolist()[1:]
 	probe_list_t2 = df_beta.loc[df_beta["type"] == "II"].index.values.tolist()
-	probe_list = df_beta.index.values.tolist()
 
 	'''dataframe with all classes to all samples and type 2 probes'''
 	df_classes_t2 = None
@@ -370,20 +358,20 @@ def bmiq(df_beta, df_sample_to_numbers):
 			- unmethylate_values, methylated_valued and hemimethylated_values 
 			sticked together
 			- sort by probe name
-			- append du df_bmiq'''
+			- append to df_bmiq'''
+			#frames = [df_unmethylated_values, df_methylated_values]
 			frames = [df_unmethylated_values, df_methylated_values,
 			          df_hemimethylated_values]
 			normalized_values = pd.concat(frames)
-			# print(normalized_values.loc[['cg00009088']])
-
+			#new_probe_list = unmethylated_probes + methylated_probes
 			if df_bmiq is None:
 				df_bmiq = pd.DataFrame(normalized_values.to_numpy(),
 				                       index=probe_list_t2, columns=[sample])
 			else:
 				df_bmiq[sample] = normalized_values
 	frames = [df_bmiq, df_beta_t1]
-	print("Final Dataframe: probe cg00009088")
-	print(df_bmiq.loc[['cg00009088']])
+	print("Final Dataframe: probe cg00003784")
+	print(df_bmiq.loc[['cg00003784']])
 	df = pd.concat(frames)
 	df_res = df.sort_index()
 	return df_res
