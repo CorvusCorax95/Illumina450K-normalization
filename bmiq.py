@@ -24,7 +24,6 @@ def bmiq_unmethylated_case(df_t2_unmethylated, unmethylated_probes,
 	q_u_list = []
 	x = 0
 	for probe in unmethylated_probes:
-		#sort values into u2l and u2r
 		value = df_t2_unmethylated.loc[probe]
 		if value <= mean_type2_unmethylated:
 			u2l_list.append(probe)
@@ -104,7 +103,6 @@ def bmiq_hemimethylated(df_t2_hemimethylated, df_t2_unmethylated,
 	'''for type2 probes with H-state: perform a dilation (scale) 
 	transformation to "fit" the data into the "gap" with endpoints defined by
 	max(eta2U) and min(eta2M)'''
-	print("STEP 4 - HEMIMETHYLATED")
 	eta_2_H_list = []
 	maxH = df_t2_hemimethylated.max()
 	minH = df_t2_hemimethylated.min()
@@ -116,18 +114,7 @@ def bmiq_hemimethylated(df_t2_hemimethylated, df_t2_unmethylated,
 	nminH = max(eta_u_list) - deltaUH
 	nmaxH = min(eta_m_list) - deltaHM
 	delta_eta_H = nmaxH - nminH
-	print("maxH: ", maxH)
-	print("minH: ", minH)
-	print("minM:", minM)
-	print("maxU:", maxU)
-	print("Delta beta H: ", delta_beta_H)
-	print("Delta UH: ", deltaUH)
-	print("Delta HM: ", deltaHM)
-	print("Max & min eta u list: ", max(eta_u_list), min(eta_u_list))
-	print("Max & min eta m list: ", max(eta_m_list), min(eta_m_list))
-	print("nmaxH: ", nmaxH)
-	print("nminH: ", nminH)
-	print("Delta eta H: ", delta_eta_H)
+
 
 	x = 0
 	list = []
@@ -139,7 +126,6 @@ def bmiq_hemimethylated(df_t2_hemimethylated, df_t2_unmethylated,
 		if eta_2_H > 1:
 			x = x+1
 			list.append(probe)
-	print("Amount hemimethylated= ", x)
 	df = pd.DataFrame(eta_2_H_list,
 	                  index=df_t2_hemimethylated.index.values.tolist())
 	return df

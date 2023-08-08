@@ -16,7 +16,7 @@ def _hist_plot(df):
 	for the x axis."""
 	plt.style.use('dark_background')
 	for sample in df.columns.values.tolist():
-		sns.histplot(df[sample], kde=False, bins=30,
+		sns.histplot(df[sample], kde=False, bins=20,
 		             label=sample, element='poly', fill=False)
 	plt.legend(loc="upper right", ncols=2)
 	plt.grid(True, alpha=0.35)
@@ -25,61 +25,83 @@ def _hist_plot(df):
 # can take dataframes with type column
 def containerize_chart(df, name):
 	"""Container makes usage of streamlit-extras possible."""
+	if "type" in df.columns.values.tolist():
+		df.drop(['type'], axis=1)
+	if "Median" in df.columns.values.tolist():
+		df.drop(['Median'], axis=1)
 	with chart_container(df):
 		st.write(name)
 		st.pyplot(_hist_plot(df))
 		st.write("(Mean, Variance, STD): ", prep.output_measures(df))
 
 
-def _switch(data_type, df_beta):
+
+def _switch(data_type, df):
 	"""Switch-case for differentiating between the different types of
 	normalizations without encountering too much code duplication. Uses a
 	custom enum for the type of Normalization provided (DataType)."""
+	if 'type' in df.columns.values.tolist():
+		df = df.drop(['type'], axis=1)
 	if data_type == DataType.BETA:
-		return df_beta
+		return df
 	elif data_type == DataType.MEAN:
-		df_beta_norm = norm.mean_normalization(df_beta)
+		df_norm = norm.mean_normalization(df)
 		title = "Mean Normalization"
 	elif data_type == DataType.MINMAX:
-		df_beta_norm = norm.min_max_normalization(df_beta)
+		df_norm = norm.min_max_normalization(df)
 		title = "Min-Max Normalization"
 	elif data_type == DataType.QN:
-		sample_list = df_beta.columns.values.tolist()
-		df_beta_norm = norm.quantile_normalization(sample_list, 'Median')
+		sample_list = df.columns.values.tolist()
+		df_norm = norm.quantile_normalization(df, 'Median')
 		title = "Quantile Normalization"
-	return df_beta_norm, title
+	return df_norm, title
 
 
 # return df to save as csv
 @dispatch(DataType, object)
-def default_plots(data_type, df_beta):
+def default_plots(data_type, df):
 	"""Splits page into two columns to show methylated and unmethylated case
 	side-by-side."""
-
-	df_beta_norm, title = _switch(data_type, df_beta)
+	df_norm, title = _switch(data_type, df)
+	if "type" in df.columns.values.tolist():
+		df = df.drop(['type'], axis=1)
 	col_left, col_right = st.columns(2)
 	with col_left:
-		containerize_chart(df_beta, "Raw Beta Values")
+		containerize_chart(df, "Raw Values")
 	with col_right:
-		containerize_chart(df_beta_norm, title)
-	return df_beta_norm
+		containerize_chart(df_norm, title)
+	return df_norm
 
 
 @dispatch(object, object, str)
 def default_plots(df_t1, df_t2, title):
 	"""Splits page into two columns to show methylated and unmethylated case
 	side-by-side."""
-
 	col_left, col_right = st.columns(2)
 	with col_left:
 		containerize_chart(df_t1, str(title + " Type 1 Probes"))
 	with col_right:
 		containerize_chart(df_t2, str(title + " Type 2 Probes"))
 
+def meth_plots(df_meth, df_unmeth, title):
+	"""Splits page into two columns to show methylated and unmethylated case
+	side-by-side."""
+	col_left, col_right = st.columns(2)
+	with col_left:
+		containerize_chart(df_meth, str(title + "(Methylated)"))
+	with col_right:
+		containerize_chart(df_unmeth, str(title + "(Unmethylated)"))
+
 
 @st.cache_data
 def beta_value():
 	df_meth, df_unmeth = prep.get_dataframe(True)
+	df_beta = prep.beta_value(df_meth, df_unmeth, 100)
+	return df_beta
+
+@dispatch(object, object)
+@st.cache_data
+def beta_value(df_meth, df_unmeth):
 	df_beta = prep.beta_value(df_meth, df_unmeth, 100)
 	return df_beta
 

@@ -10,6 +10,8 @@ import prepare_data as prep
 @streamlit.cache_data
 def mean_normalization(df):
 	sample_list = df.columns.values.tolist()
+	if "type" in sample_list:
+		sample_list.remove("type")
 	norm_df = (df[sample_list] - df[sample_list].mean()) / df[sample_list].std()
 
 	return norm_df
@@ -25,18 +27,9 @@ def min_max_normalization(df):
 
 # QN muss auf intensities durchgeführt werden
 @streamlit.cache_data
-def quantile_normalization(sample_list, reference):
-	df_meth, df_unmeth = prep.get_dataframe(False)
-
-	df_meth = df_meth[sample_list]
-	df_unmeth = df_unmeth[sample_list]
-
-	df_meth['Median'] = df_meth.median(axis=1)
-	df_unmeth['Median'] = df_unmeth.median(axis=1)
-
-	df_qn_meth = qn.quantile_normalize(df_meth, target=df_meth[reference])
-	df_qn_unmeth = qn.quantile_normalize(df_unmeth, target=df_unmeth[reference])
-	df_qn = prep.beta_value(df_qn_meth, df_qn_unmeth, 100)
+def quantile_normalization(df, reference):
+	df['Median'] = df.median(axis=1)
+	df_qn = qn.quantile_normalize(df, target=df[reference])
 	return df_qn
 
 
@@ -89,26 +82,18 @@ def bmiq(df_beta, df_sample_to_numbers):
 	'''dataframe with all classes to all samples and type 2 probes'''
 	df_classes_t2 = None
 	df_bmiq = None
-	print("----------START-------------")
 	for sample in sample_list:
 		index = df_sample_to_numbers.index[df_sample_to_numbers.samples ==
 		                                   sample]
-		print(df_sample_to_numbers)
 		n = index[0]
-		print("------------------------------")
-		print(sample, n)
-		print("STEP 1")
 		'''parameters per sample (per type)'''
 		df_t1_parameters = prep.get_parameters(
-			"C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
-			"\\betamix-results\\type1_probes-est.h5", n)
+			"./betamix-results/type1_probes-est.h5", n)
 		df_t2_parameters = prep.get_parameters(
-			"C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
-			"\\betamix-results\\type2_probes-est.h5", n)
+			"./betamix-results/type2_probes-est.h5", n)
 		'''classes per sample (type 2)'''
-		df_classes = prep.get_classes(
-			"C:\\Users\\lisar\\Documents\\University\\Illumina450K-normalization"
-			"\\betamix-results\\type2_probes-eval.h5", probe_list_t2, n)
+		df_classes = prep.get_classes("./betamix-results/type2_probes-eval.h5"
+			 ,probe_list_t2, n)
 		'''list with classes for type 2 probes (per sample)'''
 		a = df_classes["sample"].to_numpy()
 
@@ -121,18 +106,16 @@ def bmiq(df_beta, df_sample_to_numbers):
 
 		'''lists with probes per sample'''
 		unmethylated_probes = df_classes_t2.loc[df_classes_t2[sample] ==
-		                                       0].index.values.tolist()
+		                                        0].index.values.tolist()
 		hemimethylated_probes = df_classes_t2.loc[df_classes_t2[sample] ==
-		                                         1].index.values.tolist()
+		                                          2].index.values.tolist()
 		methylated_probes = df_classes_t2.loc[df_classes_t2[sample] ==
-		                                      2].index.values.tolist()
+		                                      1].index.values.tolist()
 		'''dataframes with corresponding probes as classified in betamix'''
 		df_t2_unmethylated = df_beta_t2[sample].filter(unmethylated_probes,
 		                                               axis=0)
-
 		df_t2_methylated = df_beta_t2[sample].filter(methylated_probes,
 		                                             axis=0)
-
 		df_t2_hemimethylated = df_beta_t2[sample].filter(hemimethylated_probes,
 		                                                 axis=0)
 		'''Prep Step 2 & 3'''
@@ -140,7 +123,6 @@ def bmiq(df_beta, df_sample_to_numbers):
 		probes with beta-values smaller(larger) than mean_type2_unmethylated'''
 		''' Calculate mean_type2_methylated, then let M2L(M2R) = set of M2
 		probes with beta-values smaller(larger) than mean_type2_methylated'''
-		print("STEP 2 & 3")
 		# ratios are ok
 		mean_type2_unmethylated = df_t2_parameters['a']['U'] / (
 				df_t2_parameters[
@@ -151,14 +133,13 @@ def bmiq(df_beta, df_sample_to_numbers):
 			                                                      'a']['M'] +
 		                                                      df_t2_parameters[
 			                                                      'b']['M'])
-		print("MEANS ------------")
-		print(mean_type2_methylated)
-		print(mean_type2_unmethylated)
-		print("MEANS OF COLUMNS ------------")
-		print(df_t2_unmethylated.mean(axis=0))
-		print(df_t2_methylated.mean(axis=0))
+		mean_type2_hemimethylated = df_t2_parameters['a']['H'] / (
+				df_t2_parameters['a']['H'] + df_t2_parameters['b']['H'])
+		print(mean_type2_methylated, mean_type2_hemimethylated, mean_type2_unmethylated)
 		if mean_type2_methylated > 1 or mean_type2_unmethylated > 1:
 			print("ratio broken")
+		if mean_type2_hemimethylated > 1:
+			print("hemimethylated ratio broken")
 		'''list with bmiq-normalized, unmethylated values of type 2 probes
 		order equal to unmethylated_probes'''
 		'''
@@ -189,8 +170,6 @@ def bmiq(df_beta, df_sample_to_numbers):
 				eta_u_list,
 				eta_m_list,
 				hemimethylated_probes)
-			print("Normalized Hemimethylated Values")
-			print(df_hemimethylated_values.loc[['cg00004818']])
 			'''to save everything in one dataframe I have to stick everything 
 			back together, such that all probes have their respective normalized 
 			values.
@@ -203,15 +182,11 @@ def bmiq(df_beta, df_sample_to_numbers):
 			          df_hemimethylated_values]
 			normalized_values = pd.concat(frames)
 			normalized_values.columns = [sample]
-			print("Normalized Values")
-			print(normalized_values.loc[['cg00004818']])
 			if df_bmiq is None:
 				df_bmiq = normalized_values[[sample]].copy()
 			else:
 				df_bmiq[sample] = normalized_values
 	frames = [df_bmiq, df_beta_t1]
-	print("Final Dataframe: probe cg00004818")
-	print(df_bmiq.loc[['cg00004818']])
 	df = pd.concat(frames)
 	df_res = df.sort_index()
 	return df_res

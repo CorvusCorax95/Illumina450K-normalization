@@ -98,7 +98,7 @@ def beta_value(df_meth, df_unmeth, offset):
 	"""Makes beta-values from logged values.
 	beta-value: methylated / methylated + unmethylated + 100"""
 
-	sample_list = df_meth.columns.values.tolist()[1:]
+	sample_list = df_meth.columns.values.tolist()
 	probe_list = df_meth.index.values.tolist()
 	df = pd.DataFrame(index=probe_list, columns=sample_list)
 
