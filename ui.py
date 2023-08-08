@@ -74,8 +74,9 @@ def make_page():
 			b_qn = st.checkbox('Quantile Normalization')
 			b_minmax = st.checkbox('Min-Max Normalization')
 			b_bmiq = st.checkbox('Beta-Mixture-Quantile Normalization')
-			b_qn_bmiq = st.checkbox('Quantile Normalization + '
-			                        'Beta-Mixture-Quantile Normalization')
+			#b_qn_bmiq = st.checkbox('Quantile Normalization + '
+			#                        'Beta-Mixture-Quantile Normalization')
+			b_qn_bmiq = False
 			st.info('Additional Info.')
 			show_types = st.checkbox('Additional view: split by types')
 			show_boxplot = st.checkbox('Additional boxplots for normalizations')
@@ -174,17 +175,18 @@ def make_plots(df_beta, b_mean, b_minmax, b_qn, b_bmiq, b_qn_bmiq, show_types,
 				df_bmiq_t1, df_bmiq_t2 = prep.split_types(df_bmiq_w_types)
 				plot.default_plots(df_bmiq_t1, df_bmiq_t2, "BMIQ "
 				                                           "Normalized")
-	with st.spinner("Wait for Normalization..."):
-		if b_qn_bmiq:
-			st.subheader("QN.BMIQ Normalization")
-			df_qn_beta = norm.quantile_normalization(options, 'Median')
-			df_qn_bmiq = plot.bmiq_plot(df_qn_beta)
-			user.convert_df(df_qn_bmiq, 'download/bmiq.csv')
-			if show_boxplot:
-				plot.boxplots(df_qn_bmiq)
-			if show_types:
-				df_qn_bmiq_w_types = prep.add_probetypes(df_qn_bmiq)
-				df_qn_bmiq_t1, df_qn_bmiq_t2 = prep.split_types(
-					df_qn_bmiq_w_types)
-				plot.default_plots(df_qn_bmiq_t1, df_qn_bmiq_t2, "QN.BMIQ "
-				                                           "Normalized")
+	# STILL BUGGY
+	# with st.spinner("Wait for Normalization..."):
+	# 	if b_qn_bmiq:
+	# 		st.subheader("QN.BMIQ Normalization")
+	# 		df_qn_beta = norm.quantile_normalization(options, 'Median')
+	# 		df_qn_bmiq = plot.bmiq_plot(df_qn_beta, df_sample_to_numbers)
+	# 		user.convert_df(df_qn_bmiq, 'download/bmiq.csv')
+	# 		if show_boxplot:
+	# 			plot.boxplots(df_qn_bmiq)
+	# 		if show_types:
+	# 			df_qn_bmiq_w_types = prep.add_probetypes(df_qn_bmiq)
+	# 			df_qn_bmiq_t1, df_qn_bmiq_t2 = prep.split_types(
+	# 				df_qn_bmiq_w_types)
+	# 			plot.default_plots(df_qn_bmiq_t1, df_qn_bmiq_t2, "QN.BMIQ "
+	# 			                                           "Normalized")
