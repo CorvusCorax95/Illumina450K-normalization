@@ -22,6 +22,12 @@ def _hist_plot(df):
 	plt.grid(True, alpha=0.35)
 
 
+def density(df, title):
+	sns.kdeplot(df)
+	plt.title(title)
+	plt.legend(loc="upper right", ncols=2)
+	plt.grid(True, alpha=0.35)
+
 # can take dataframes with type column
 def containerize_chart(df, name):
 	"""Container makes usage of streamlit-extras possible."""
@@ -43,7 +49,7 @@ def _switch(data_type, df):
 	if 'type' in df.columns.values.tolist():
 		df = df.drop(['type'], axis=1)
 	if data_type == DataType.BETA:
-		return df
+		return df, "Beta Values"
 	elif data_type == DataType.MEAN:
 		df_norm = norm.mean_normalization(df)
 		title = "Mean Normalization"
@@ -63,13 +69,7 @@ def default_plots(data_type, df):
 	"""Splits page into two columns to show methylated and unmethylated case
 	side-by-side."""
 	df_norm, title = _switch(data_type, df)
-	if "type" in df.columns.values.tolist():
-		df = df.drop(['type'], axis=1)
-	col_left, col_right = st.columns(2)
-	with col_left:
-		containerize_chart(df, "Raw Values")
-	with col_right:
-		containerize_chart(df_norm, title)
+	containerize_chart(df_norm, title)
 	return df_norm
 
 
@@ -106,10 +106,9 @@ def beta_value(df_meth, df_unmeth):
 	return df_beta
 
 
-def bmiq_plot(df, df_sample_to_numbers):
+def bmiq_plot(df_meth, df_sample_to_numbers):
 	"""Provides necessary dataframes and calls all corresponding methods."""
-	df_beta = prep.add_probetypes(df)
-	df_bmiq = norm.bmiq(df_beta, df_sample_to_numbers)
+	df_bmiq = norm.bmiq(df_meth, df_sample_to_numbers)
 	containerize_chart(df_bmiq, "BMIQ Values")
 	return df_bmiq
 

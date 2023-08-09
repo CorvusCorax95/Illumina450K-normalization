@@ -48,6 +48,12 @@ def make_header():
 		In the sidebar you can select which normalizations you want to 
 		see, some additional info and if you probably want to download 
 		all preprocessed files in one zip file.
+		Download everything at once: Get an additional button that downloads 
+		a zip-File with all calculated dataframes as .csv
+		Normalize non-logged intensities: This means that the initial 
+		normalization is performed on non-logged 
+		data. After the normalization the log is calulated before 
+		calculating the beta values.
 		Htting the "Run Normalization" button (obviously) starts 
 		calculating what you selected.\n
 		In the sample selection underneath you can select how many 
@@ -68,22 +74,22 @@ def make_page():
 	with st.sidebar:
 		with st.form("sidebar"):
 			b_download = st.checkbox("Download everything at once")
-			b_log = st.checkbox("Used logged light intensities")
+			b_log = st.checkbox("Normalize non-logged intensities.")
 			st.write("What normalizations do you want to see?")
 			b_mean = st.checkbox('Mean Normalization')
 			b_qn = st.checkbox('Quantile Normalization')
 			b_minmax = st.checkbox('Min-Max Normalization')
 			b_qn_bmiq = st.checkbox('Beta-Mixture-Quantile Normalization')
 			st.info('Additional Info.')
-			show_types = st.checkbox('Additional view: split by types')
+			show_types = st.checkbox('Additional view split by types')
 			show_boxplot = st.checkbox('Additional boxplots for normalizations')
-
+			show_dens = st.checkbox('Additional density graphs')
 			submitted = st.form_submit_button("Run Normalization")
 
 	if b_log:
-		df_meth, df_unmeth = prep.log_data()
-	else:
 		df_meth, df_unmeth = prep.get_dataframe(True)
+	else:
+		df_meth, df_unmeth = prep.log_data()
 
 	df_sample_to_numbers = pd.DataFrame(df_meth.columns.values.tolist(),
 	                                    columns=["samples"])
@@ -100,7 +106,7 @@ def make_page():
 	df_unmeth = df_unmeth[options]
 	if submitted:
 		make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
-		           show_types, show_boxplot, options, df_sample_to_numbers)
+		           show_types, show_boxplot, show_dens, df_sample_to_numbers)
 	with st.sidebar:
 		if b_download:
 			shutil.make_archive("compressed_download", 'zip', "download")
@@ -116,8 +122,7 @@ def make_page():
 
 
 def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
-               show_types,
-               show_boxplot, options, df_sample_to_numbers):
+               show_types, show_boxplot, show_dens, df_sample_to_numbers):
 	"""Cares about all the plots and Dataframe-Views"""
 
 	with st.spinner("Waiting for data..."):
@@ -125,17 +130,21 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 		plot.meth_plots(df_meth, df_unmeth, "Raw Light Intensities")
 		user.convert_df(df_meth, 'download/raw-meth-values.csv')
 		user.convert_df(df_unmeth, 'download/raw-unmeth-values.csv')
-		df_meth = prep.add_probetypes(df_meth)
-		df_unmeth = prep.add_probetypes(df_unmeth)
-		df_meth_t1, df_meth_t2 = prep.split_types(df_meth)
-		df_unmeth_t1, df_unmeth_t2 = prep.split_types(df_unmeth)
-		plot.default_plots(df_meth_t1, df_meth_t2, "Methylated Values")
-		plot.default_plots(df_unmeth_t1, df_unmeth_t2, "Unmethylated Values")
+		df_beta = prep.beta_value(df_meth, df_unmeth, 100)
+		plot.default_plots(DataType.BETA, df_beta)
 		if show_boxplot:
-			plot.boxplots(df_meth_t1)
-			plot.boxplots(df_meth_t2)
-			plot.boxplots(df_unmeth_t1)
-			plot.boxplots(df_unmeth_t2)
+			plot.boxplots(df_meth)
+			plot.boxplots(df_unmeth)
+		if show_types:
+			df_meth = prep.add_probetypes(df_meth)
+			df_unmeth = prep.add_probetypes(df_unmeth)
+			df_meth_t1, df_meth_t2 = prep.split_types(df_meth)
+			df_unmeth_t1, df_unmeth_t2 = prep.split_types(df_unmeth)
+			plot.default_plots(df_meth_t1, df_meth_t2, "Methylated Values")
+			plot.default_plots(df_unmeth_t1, df_unmeth_t2,
+			                   "Unmethylated Values")
+		if show_dens:
+			st.pyplot(plot.density(df_beta, "Density of Beta Values"))
 
 	with st.spinner("Wait for Normalization..."):
 		if b_mean:
@@ -154,7 +163,11 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 			if show_types:
 				df_mean_beta = prep.add_probetypes(df_mean_beta)
 				df_mean_t1, df_mean_t2 = prep.split_types(df_mean_beta)
-				plot.default_plots(df_mean_t1, df_mean_t2, "Mean Normalized")
+				plot.default_plots(df_mean_t1, df_mean_t2,
+				                   "Mean Normalized Beta Values")
+			if show_dens:
+				st.pyplot(plot.density(df_mean_beta, "Density of Mean "
+				                                     "Normalized Beta Values"))
 	with st.spinner("Wait for Normalization..."):
 		if b_minmax:
 			st.subheader("Minmax Normalization")
@@ -174,7 +187,10 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 				df_minmax_beta = prep.add_probetypes(df_minmax_beta)
 				df_minmax_t1, df_minmax_t2 = prep.split_types(df_minmax_beta)
 				plot.default_plots(df_minmax_t1, df_minmax_t2, "Minmax "
-				                                               "Normalized")
+				                                               "Normalized Beta Values")
+			if show_dens:
+				st.pyplot(plot.density(df_minmax_beta, "Density of Minmax "
+				                                       "Normalized Beta Values"))
 	with st.spinner("Wait for Normalization..."):
 		if b_qn:
 			st.subheader("Quantile Normalization")
@@ -185,35 +201,34 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 			user.convert_df(df_meth_qn, 'download/qnorm_meth.csv')
 			user.convert_df(df_unmeth_qn, 'download/qnorm_unmeth.csv')
 			df_qn_beta = plot.beta_value(df_meth_qn, df_unmeth_qn)
-			plot.containerize_chart(df_qn_beta, "Quantile Normalization (Beta Values)")
+			plot.containerize_chart(df_qn_beta,
+			                        "Quantile Normalization (Beta Values)")
 			if show_boxplot:
 				plot.boxplots(df_qn_beta)
 			if show_types:
 				df_qn_w_types = prep.add_probetypes(df_qn_beta)
 				df_qn_t1, df_qn_t2 = prep.split_types(df_qn_w_types)
-				plot.default_plots(df_qn_t1, df_qn_t2, "Quantile Normalized")
+				plot.default_plots(df_qn_t1, df_qn_t2, "Quantile Normalized "
+				                                       "Beta Values")
+			if show_dens:
+				st.pyplot(plot.density(df_qn_beta, "Density of Quantile "
+				                                   "Normalized Beta Values"))
 	with st.spinner("Wait for Normalization..."):
 		if b_qn_bmiq:
-			st.subheader("QN.BMIQ Normalization")
-			st.info("The QN.BMIQ Normalization as presented in Teschendorff et "
+			st.subheader("BMIQ Normalization")
+			st.info("The BMIQ Normalization as presented in Teschendorff et "
 			        "al. (2013) only proposed a normalization for type 2 "
-			        "probes. This leads to a combined histogram with one type "
-			        "normalized and one type as quantile normalized beta "
-			        "values. To see the normalization better, tick the box "
-			        "'Additional view: split by types'")
-			st.subheader("_Quantile Normalization_")
-			st.subheader("_Methylated File_")
-			df_meth_qn = plot.default_plots(DataType.QN, df_meth)
-			st.subheader("_Unmethylated File_")
-			df_unmeth_qn = plot.default_plots(DataType.QN, df_unmeth)
-			df_qn_beta = plot.beta_value(df_meth_qn, df_unmeth_qn)
-			df_qn_beta = df_qn_beta.drop(['Median'], axis=1)
-			df_bmiq = plot.bmiq_plot(df_qn_beta, df_sample_to_numbers)
+			        "probe values. To see the normalization better, tick the "
+			        "box 'Additional view: split by types'")
+			df_bmiq = plot.bmiq_plot(df_meth, df_sample_to_numbers)
 			user.convert_df(df_bmiq, 'download/bmiq.csv')
+			if show_dens:
+				st.pyplot(plot.density(df_bmiq, "Density of BMIQ Normalized "
+				                                "Beta Values"))
 			if show_boxplot:
 				plot.boxplots(df_bmiq)
 			if show_types:
 				df_bmiq_w_types = prep.add_probetypes(df_bmiq)
 				df_bmiq_t1, df_bmiq_t2 = prep.split_types(df_bmiq_w_types)
-				plot.default_plots(df_bmiq_t1, df_bmiq_t2, "QN.BMIQ "
-				                                           "Normalized")
+				plot.default_plots(df_bmiq_t1, df_bmiq_t2, "BMIQ "
+				                                           "Normalized Beta Values")

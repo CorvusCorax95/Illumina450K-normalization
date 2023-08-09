@@ -126,7 +126,6 @@ def bmiq_hemimethylated(df_t2_hemimethylated, df_t2_unmethylated,
 		if eta_2_H > 1:
 			x = x+1
 			list.append(probe)
-	print("Amount of hemimethylated probes with a problem:", x)
 	df = pd.DataFrame(eta_2_H_list,
 	                  index=df_t2_hemimethylated.index.values.tolist())
 	return df

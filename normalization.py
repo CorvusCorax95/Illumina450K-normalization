@@ -1,6 +1,7 @@
 import pandas as pd
 import qnorm as qn
 import streamlit
+import numpy as np
 
 import bmiq as b
 
@@ -64,9 +65,18 @@ def set_states(x):
 	else:
 		return 'H'
 
+def _beta_for_bmiq(df_w, df_pi, sample_list, probe_list):
 
-# @streamlit.cache_data
-def bmiq(df_beta, df_sample_to_numbers):
+	df = pd.DataFrame(np.zeros((len(probe_list), len(sample_list))),
+	                  index=probe_list, columns=sample_list)
+	for sample in sample_list:
+		for probe in probe_list:
+			df[sample][probe] = df_pi["pi"]["U"]*df_w["U"][probe] + df_pi[
+				"pi"]["H"]*df_w["H"][probe] + df_pi["pi"]["M"]*df_w["M"][probe]
+	return df
+
+@streamlit.cache_data
+def bmiq(df_meth, df_sample_to_numbers):
 	'''STEP 1'''
 	'''Fitting of a three-state (unmethylated-U, hemimethylated-H, fully
 	methylated-M) beta mixture model to the type1 and type2 probes
@@ -74,10 +84,11 @@ def bmiq(df_beta, df_sample_to_numbers):
 	methylation as hemimethylation even though hemimethylation
 	is most often used in the context of strand-specific methylation.
 	-> Realized with betamix (Schroeder, Rahmann)'''
-	df_beta_t1, df_beta_t2 = prep.split_types(df_beta)
+	df_meth_t1, df_meth_t2 = prep.split_types(df_meth)
 	'''list with all names of probes with type 2'''
-	sample_list = df_beta.columns.values.tolist()[1:]
-	probe_list_t2 = df_beta.loc[df_beta["type"] == "II"].index.values.tolist()
+	sample_list = df_meth.columns.values.tolist()[1:]
+	probe_list_t1 = df_meth_t1.index.values.tolist()
+	probe_list_t2 = df_meth_t2.index.values.tolist()
 
 	'''dataframe with all classes to all samples and type 2 probes'''
 	df_classes_t2 = None
@@ -92,11 +103,20 @@ def bmiq(df_beta, df_sample_to_numbers):
 		df_t2_parameters = prep.get_parameters(
 			"./betamix-results/type2_probes-est.h5", n)
 		'''classes per sample (type 2)'''
+		df_t1_pi = prep.get_pi(
+			"./betamix-results/type1_probes-est.h5", n)
+		df_t2_pi = prep.get_pi(
+			"./betamix-results/type2_probes-est.h5", n)
+		'''classes per sample (type 2)'''
 		df_classes = prep.get_classes("./betamix-results/type2_probes-eval.h5"
 			 ,probe_list_t2, n)
+		df_t1_w = prep.get_w("./betamix-results/type1_probes-est.h5", n,
+		                     sample_list, probe_list_t1)
+		df_t2_w = prep.get_w("./betamix-results/type2_probes-est.h5", n,
+		                     sample_list, probe_list_t2)
+
 		'''list with classes for type 2 probes (per sample)'''
 		a = df_classes["sample"].to_numpy()
-
 		'''extends df_classes_t2 for each sample'''
 		if df_classes_t2 is None:
 			df_classes_t2 = pd.DataFrame(a, index=probe_list_t2,
@@ -104,13 +124,18 @@ def bmiq(df_beta, df_sample_to_numbers):
 		else:
 			df_classes_t2[sample] = a
 
+		df_beta_t1 = _beta_for_bmiq(df_t1_w, df_t1_pi, sample_list,
+		                           probe_list_t1)
+		df_beta_t2 = _beta_for_bmiq(df_t2_w, df_t2_pi, sample_list,
+		                           probe_list_t2)
+
 		'''lists with probes per sample'''
 		unmethylated_probes = df_classes_t2.loc[df_classes_t2[sample] ==
 		                                        0].index.values.tolist()
 		hemimethylated_probes = df_classes_t2.loc[df_classes_t2[sample] ==
-		                                          2].index.values.tolist()
+		                                          1].index.values.tolist()
 		methylated_probes = df_classes_t2.loc[df_classes_t2[sample] ==
-		                                      1].index.values.tolist()
+		                                      2].index.values.tolist()
 		'''dataframes with corresponding probes as classified in betamix'''
 		df_t2_unmethylated = df_beta_t2[sample].filter(unmethylated_probes,
 		                                               axis=0)
@@ -133,13 +158,6 @@ def bmiq(df_beta, df_sample_to_numbers):
 			                                                      'a']['M'] +
 		                                                      df_t2_parameters[
 			                                                      'b']['M'])
-		mean_type2_hemimethylated = df_t2_parameters['a']['H'] / (
-				df_t2_parameters['a']['H'] + df_t2_parameters['b']['H'])
-		print(mean_type2_methylated, mean_type2_hemimethylated, mean_type2_unmethylated)
-		if mean_type2_methylated > 1 or mean_type2_unmethylated > 1:
-			print("ratio broken")
-		if mean_type2_hemimethylated > 1:
-			print("hemimethylated ratio broken")
 		'''list with bmiq-normalized, unmethylated values of type 2 probes
 		order equal to unmethylated_probes'''
 		'''

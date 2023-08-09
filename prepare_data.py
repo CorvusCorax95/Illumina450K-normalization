@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import h5py as h5
+from multipledispatch import dispatch
 
 """PREPARE DATA
 This file transforms all the nasty inputs we get to pretty little dataframes.
@@ -62,6 +63,7 @@ def get_dataframe(with_types):
 
 # applying log to all values in the dataframe
 # stores dataframe as csv in new file
+@dispatch()
 def log_data():
 	"""Logs on every value in the dataframe."""
 	df_meth, df_unmeth = get_dataframe(True)
@@ -71,7 +73,27 @@ def log_data():
 
 	"""Methylated File"""
 	df_meth.replace(0, 0.01, inplace=True)
-	df_log_meth = np.log2(df_meth[sample_list])
+	df_log_meth = np.log(df_meth[sample_list])
+	# find and remove inf values after log
+	df_log_meth.replace([np.inf, -np.inf], np.nan, inplace=True)
+	df_log_meth = df_log_meth.dropna()
+
+	"""Unmethylated File"""
+	df_unmeth.replace(0, 0.01, inplace=True)
+	df_log_unmeth = np.log(df_unmeth[sample_list])
+	# find and remove inf values after log
+	df_log_unmeth.replace([np.inf, -np.inf], np.nan, inplace=True)
+	df_log_unmeth = df_log_unmeth.dropna()
+	return df_log_meth, df_log_unmeth
+
+
+@dispatch(object, object)
+def log_data(df_meth, df_unmeth):
+	sample_list = df_meth.columns.values.tolist()[1:]
+
+	"""Methylated File"""
+	df_meth.replace(0, 0.01, inplace=True)
+	df_log_meth = np.log(df_meth[sample_list])
 	# find and remove inf values after log
 	df_log_meth.replace([np.inf, -np.inf], np.nan, inplace=True)
 	df_log_meth = df_log_meth.dropna()
@@ -99,9 +121,10 @@ def beta_value(df_meth, df_unmeth, offset):
 	beta-value: methylated / methylated + unmethylated + 100"""
 
 	sample_list = df_meth.columns.values.tolist()
+	if "type" in sample_list:
+		sample_list.remove("type")
 	probe_list = df_meth.index.values.tolist()
 	df = pd.DataFrame(index=probe_list, columns=sample_list)
-
 	for sample in sample_list:
 		for probe in probe_list:
 			df[sample][probe] = (df_meth[sample][probe] + (offset / 2)) / (
@@ -144,6 +167,25 @@ def get_parameters(path, n):
 	data = subgrp["ab"]
 	return pd.DataFrame(data, index=["U", "H", "M"], columns=["a", "b"])
 
+def get_pi(path, n):
+	'''After using the betamix-tool we need to get the esimated parameters
+	from the h5 file provided.'''
+	num = str(n)
+	f = h5.File(path, "r")
+	grp = f['estimation']
+	subgrp = grp[num]
+	data = subgrp["pi"]
+	return pd.DataFrame(data, index=["U", "H", "M"], columns=["pi"])
+
+def get_w(path, n, sample_list, probe_list):
+	'''After using the betamix-tool we need to get the esimated parameters
+	from the h5 file provided.'''
+	num = str(n)
+	f = h5.File(path, "r")
+	grp = f['estimation']
+	subgrp = grp[num]
+	data = subgrp["w"]
+	return pd.DataFrame(data, index=probe_list, columns=["U", "H", "M"])
 
 def get_classes(path, probe_list, n):
 	'''gets the class to probe and returns dataframe'''
@@ -155,6 +197,7 @@ def get_classes(path, probe_list, n):
 	subsubgrp = subgrp['mix']
 	data = subsubgrp['classes']
 	return pd.DataFrame(data, index=probe_list, columns=["sample"])
+
 
 def df_to_h5(df, filename):
 	"""As preparation to use the betamix-tool by Schröder, Rahmann the
