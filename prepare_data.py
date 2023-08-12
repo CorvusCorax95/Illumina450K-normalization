@@ -3,6 +3,8 @@ import numpy as np
 import h5py as h5
 from multipledispatch import dispatch
 
+import prepare_data
+
 """PREPARE DATA
 This file transforms all the nasty inputs we get to pretty little dataframes.
 """
@@ -150,6 +152,8 @@ def m_value(df_meth, df_unmeth):
 def split_types(df):
 	"""BMIQ Normalization needs separate dataframes per type so this is the
 	function that splits them."""
+	if "type" not in df.columns.values.tolist():
+		df = prepare_data.add_probetypes(df)
 	df_t1 = df.loc[df["type"] == 'I']
 	df_t2 = df.loc[df["type"] == 'II']
 	del df_t1[df_t1.columns[0]]

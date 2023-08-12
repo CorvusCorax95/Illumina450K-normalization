@@ -44,7 +44,6 @@ del beta_values['type']
 # NORMALIZED DATAFRAMES
 
 	# mean
-print(beta_values)
 mean_norm_beta = norm.mean_normalization(beta_values)
 
 	# minmax

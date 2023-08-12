@@ -14,15 +14,25 @@ def mean_normalization(df):
 	if "type" in sample_list:
 		sample_list.remove("type")
 	norm_df = (df[sample_list] - df[sample_list].mean()) / df[sample_list].std()
-
 	return norm_df
 
 
 @streamlit.cache_data
 def min_max_normalization(df):
 	sample_list = df.columns.values.tolist()
-	mm_df = (df[sample_list] - df[sample_list].min()) / (
-			df[sample_list].max() - df[sample_list].min())
+	probe_list = df.index.values.tolist()
+	mm_df = None
+	for sample in sample_list:
+		lst = []
+		max = df[sample].max()
+		min = df[sample].min()
+		for probe in probe_list:
+			mm = (df[sample][probe] - min)/(max - min)
+			lst.append(mm)
+		if mm_df is None:
+			mm_df = pd.DataFrame(lst, index=probe_list, columns=[sample])
+		else:
+			mm_df[sample] = lst
 	return mm_df
 
 
@@ -84,6 +94,7 @@ def bmiq(df_meth, df_sample_to_numbers):
 	methylation as hemimethylation even though hemimethylation
 	is most often used in the context of strand-specific methylation.
 	-> Realized with betamix (Schroeder, Rahmann)'''
+	print(df_meth)
 	df_meth_t1, df_meth_t2 = prep.split_types(df_meth)
 	'''list with all names of probes with type 2'''
 	sample_list = df_meth.columns.values.tolist()[1:]

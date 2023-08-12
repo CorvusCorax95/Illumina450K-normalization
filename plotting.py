@@ -57,7 +57,6 @@ def _switch(data_type, df):
 		df_norm = norm.min_max_normalization(df)
 		title = "Min-Max Normalization"
 	elif data_type == DataType.QN:
-		sample_list = df.columns.values.tolist()
 		df_norm = norm.quantile_normalization(df, 'Median')
 		title = "Quantile Normalization"
 	return df_norm, title
@@ -88,9 +87,9 @@ def meth_plots(df_meth, df_unmeth, title):
 	side-by-side."""
 	col_left, col_right = st.columns(2)
 	with col_left:
-		containerize_chart(df_meth, str(title + "(Methylated)"))
+		containerize_chart(df_meth, str(title + " (Methylated)"))
 	with col_right:
-		containerize_chart(df_unmeth, str(title + "(Unmethylated)"))
+		containerize_chart(df_unmeth, str(title + " (Unmethylated)"))
 
 
 @st.cache_data
@@ -113,11 +112,10 @@ def bmiq_plot(df_meth, df_sample_to_numbers):
 	return df_bmiq
 
 
-def boxplots(df):
-	"""Builds evaluation plots."""
+def boxplots(df, title):
 	columns = df.columns.values.tolist()
 	with chart_container(df[columns]):
-		st.write("Boxplot")
+		st.write(title)
 		st.pyplot(
 			_boxplot_df(df[columns]))
 
@@ -125,6 +123,13 @@ def boxplots(df):
 def _boxplot_df(df):
 	"""Makes a boxplot from the Dataframe, a title and set boundaries
 	for the x axis"""
+	with st.expander("See Information"):
+		st.write("""
+		yellow bar: median
+		green rhombus: mean
+		red circle: flier
+		"""
+		)
 	boxprops = dict(color='lightblue', linewidth=5)
 	flierprops = dict(marker='o', markerfacecolor='firebrick')
 	medianprops = dict(linewidth=5, color='yellow')
@@ -132,8 +137,7 @@ def _boxplot_df(df):
 	                 markerfacecolor='green',
 	                 linewidth=5)
 	labels = df.columns.values.tolist()
-	plt.boxplot(df, labels=labels, showfliers=True, showmeans=True,
-	            showcaps=True, showbox=True, flierprops=flierprops,
-	            boxprops=boxprops, meanprops=meanprops, medianprops=medianprops)
+	plt.boxplot(df, boxprops=boxprops, flierprops=flierprops, medianprops=medianprops,
+	            meanprops=meanprops, labels=labels)
 	plt.style.use('dark_background')
 	plt.grid(True, alpha=0.35)

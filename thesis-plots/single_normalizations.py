@@ -36,9 +36,6 @@ df_bmiq = pd.read_csv(
 	'compressed_download(7)/bmiq.csv', index_col=0)
 df_bmiq_types = prep.add_probetypes(df_qn)
 
-sns.set_style('whitegrid')
-
-
 fig, ax = plt.subplots(2, sharey=True)
 
 df = df_bmiq_types

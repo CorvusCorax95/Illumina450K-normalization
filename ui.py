@@ -74,7 +74,7 @@ def make_page():
 	with st.sidebar:
 		with st.form("sidebar"):
 			b_download = st.checkbox("Download everything at once")
-			b_log = st.checkbox("Normalize non-logged intensities.")
+			b_log = st.checkbox("Normalize logarithmized intensities.")
 			st.write("What normalizations do you want to see?")
 			b_mean = st.checkbox('Mean Normalization')
 			b_qn = st.checkbox('Quantile Normalization')
@@ -82,14 +82,16 @@ def make_page():
 			b_qn_bmiq = st.checkbox('Beta-Mixture-Quantile Normalization')
 			st.info('Additional Info.')
 			show_types = st.checkbox('Additional view split by types')
-			show_boxplot = st.checkbox('Additional boxplots for normalizations')
+			show_boxplot = st.checkbox('Additional boxplots for '
+			                           'normalizations')
 			show_dens = st.checkbox('Additional density graphs')
 			submitted = st.form_submit_button("Run Normalization")
 
 	if b_log:
-		df_meth, df_unmeth = prep.get_dataframe(True)
-	else:
 		df_meth, df_unmeth = prep.log_data()
+	else:
+		df_meth, df_unmeth = prep.get_dataframe(True)
+
 
 	df_sample_to_numbers = pd.DataFrame(df_meth.columns.values.tolist(),
 	                                    columns=["samples"])
@@ -121,7 +123,7 @@ def make_page():
 					help="When this button is clicked, the site will reload.")
 
 
-def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
+def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_bmiq,
                show_types, show_boxplot, show_dens, df_sample_to_numbers):
 	"""Cares about all the plots and Dataframe-Views"""
 
@@ -132,9 +134,9 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 		user.convert_df(df_unmeth, 'download/raw-unmeth-values.csv')
 		df_beta = prep.beta_value(df_meth, df_unmeth, 100)
 		plot.default_plots(DataType.BETA, df_beta)
+		user.convert_df(df_beta, 'download/raw-beta-values.csv')
 		if show_boxplot:
-			plot.boxplots(df_meth)
-			plot.boxplots(df_unmeth)
+			plot.boxplots(df_beta, "Raw Beta Values")
 		if show_types:
 			df_meth = prep.add_probetypes(df_meth)
 			df_unmeth = prep.add_probetypes(df_unmeth)
@@ -158,8 +160,9 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 			df_mean_beta = plot.beta_value(df_meth_mean, df_unmeth_mean)
 			plot.containerize_chart(df_mean_beta, "Mean Normalization (Beta "
 			                                      "Values)")
+			user.convert_df(df_mean_beta, 'download/mean-beta-values.csv')
 			if show_boxplot:
-				plot.boxplots(df_mean_beta)
+				plot.boxplots(df_mean_beta, "Mean Normalization")
 			if show_types:
 				df_mean_beta = prep.add_probetypes(df_mean_beta)
 				df_mean_t1, df_mean_t2 = prep.split_types(df_mean_beta)
@@ -181,8 +184,9 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 			plot.containerize_chart(df_minmax_beta, "Minmax Normalization ("
 			                                        "Beta "
 			                                        "Values)")
+			user.convert_df(df_minmax_beta, 'download/minmax-beta-values.csv')
 			if show_boxplot:
-				plot.boxplots(df_minmax_beta)
+				plot.boxplots(df_minmax_beta, "Minmax Normalization")
 			if show_types:
 				df_minmax_beta = prep.add_probetypes(df_minmax_beta)
 				df_minmax_t1, df_minmax_t2 = prep.split_types(df_minmax_beta)
@@ -203,8 +207,9 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 			df_qn_beta = plot.beta_value(df_meth_qn, df_unmeth_qn)
 			plot.containerize_chart(df_qn_beta,
 			                        "Quantile Normalization (Beta Values)")
+			user.convert_df(df_qn_beta, 'download/qn-beta-values.csv')
 			if show_boxplot:
-				plot.boxplots(df_qn_beta)
+				plot.boxplots(df_qn_beta, "Quantile Normalization")
 			if show_types:
 				df_qn_w_types = prep.add_probetypes(df_qn_beta)
 				df_qn_t1, df_qn_t2 = prep.split_types(df_qn_w_types)
@@ -214,7 +219,7 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 				st.pyplot(plot.density(df_qn_beta, "Density of Quantile "
 				                                   "Normalized Beta Values"))
 	with st.spinner("Wait for Normalization..."):
-		if b_qn_bmiq:
+		if b_bmiq:
 			st.subheader("BMIQ Normalization")
 			st.info("The BMIQ Normalization as presented in Teschendorff et "
 			        "al. (2013) only proposed a normalization for type 2 "
@@ -226,7 +231,7 @@ def make_plots(df_meth, df_unmeth, b_mean, b_minmax, b_qn, b_qn_bmiq,
 				st.pyplot(plot.density(df_bmiq, "Density of BMIQ Normalized "
 				                                "Beta Values"))
 			if show_boxplot:
-				plot.boxplots(df_bmiq)
+				plot.boxplots(df_bmiq, "BMIQ Normalization")
 			if show_types:
 				df_bmiq_w_types = prep.add_probetypes(df_bmiq)
 				df_bmiq_t1, df_bmiq_t2 = prep.split_types(df_bmiq_w_types)
